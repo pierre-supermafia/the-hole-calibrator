@@ -1,13 +1,10 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxNetwork.h"
 #include "ofxGuiExtended.h"
-#include "BlobFinder.h"
 #include "Planef.h"
 #include "Linef.h"
 #include "Grid.h"
-#include "TrackingNetworkManager.h"
 #include "Frustum.h"
 #include "CaptureMeshArray.h"
 
@@ -16,7 +13,7 @@
 
 #include <ofMatrix4x4.h>
 
-#define N_CAMERAS 6
+#define N_CAMERAS 3
 
 #define VIEWGRID_WIDTH  132
 #define MENU_WIDTH      1000
@@ -64,12 +61,6 @@ class ofApp : public ofBaseApp{
     
 
     bool bShowVisuals = false;
-
-    //////////////////
-    //    NETWORK   //
-    //////////////////
-
-    TrackingNetworkManager networkMng;
     
     //////////////////
     //OPENGL CAMERAS//
@@ -92,6 +83,8 @@ class ofApp : public ofBaseApp{
     shared_ptr<ofBaseGLRenderer> opengl;
     shared_ptr<ofCairoRenderer> cairo;
     ofTexture render;
+
+    ofEasyCam previewCam;
     
     /////////////
     //RealSense//
@@ -100,10 +93,6 @@ class ofApp : public ofBaseApp{
 	RSDevicePtr realSense;
 
     ofMatrix4x4 unprojection;
-    
-    #ifdef USE_TWO_KINECTS
-        ofxKinect kinect2;
-    #endif
 
     bool dispRaw;
 
@@ -112,33 +101,10 @@ class ofApp : public ofBaseApp{
     ofVboMesh previewmesh;//, capturemesh;
     
     CaptureMeshArray capMesh;
-    
-    Frustum realSenseFrustum;
-	
-	/**
-	Changes operation of application
-	@param _index 0=normal, 1= recording to file, 2=playback from file
-	*/
-	void changeOperation(int& _index);
 
     void drawPreview();
-    void drawCapturePointCloud(bool _mask);
 
 	void createGUIDeviceParams();
-
-    void createFrustumCone();
-    void updateFrustumCone(int & value);
-
-    /////////////////
-    //COLOR CONTOUR//
-    /////////////////
-    
-    BlobFinder blobFinder;
-            
-    // used for viewing the point cloud
-    ofEasyCam previewCam;
-    
-	ofShader shader;
 
     ///////////////
     //CALCULATION//
@@ -172,9 +138,6 @@ class ofApp : public ofBaseApp{
     ofSpherePrimitive sphere_X;
     ofSpherePrimitive sphere_Y;
     ofSpherePrimitive sphere_Z;
-    
-    ofSpherePrimitive frustumCenterSphere;
-    ofSpherePrimitive frustumTopSphere;
 
     ofVboMesh geometry;
         
