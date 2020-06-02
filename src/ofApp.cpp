@@ -36,7 +36,7 @@ void ofApp::setup(){
 
 	viewMain.x = xOffset;
 	viewMain.y = 0;
-	viewMain.width = ofGetWidth() - xOffset - MENU_WIDTH; //xOffset * 2;
+	viewMain.width = ofGetWidth() - xOffset - MENU_WIDTH / 2; //xOffset * 2;
 	viewMain.height = VIEWPORT_HEIGHT;
 
 	for (int i = 0; i < N_CAMERAS; i++) {
@@ -48,7 +48,7 @@ void ofApp::setup(){
 	}
 
     iMainCamera = 0;
-    
+
 	previewCam.setUpAxis(glm::vec3(0, 0, 1));
 	previewCam.setTranslationSensitivity(2., 2., 2.);
 	previewCam.setNearClip(0.001f);
@@ -59,7 +59,6 @@ void ofApp::setup(){
 	ofLog(OF_LOG_NOTICE) << "MainAPP: loading postprocessing GUI";
 
 	post = gui.addPanel();
-	post->loadTheme("theme/theme_light.json");
 	post->setName("PostProcessing");
 	post->add(realSense->param_usePostProcessing);
 	post->add(realSense->param_filterDecimation);
@@ -85,11 +84,11 @@ void ofApp::setup(){
     setupCalib = gui.addPanel();
     
     setupCalib->setName("Calibration Panel");
-    
+
     setupCalib->add(calibPoint_X.set("calibrationPoint_X", ofVec2f(REALSENSE_VIDEO_WIDTH / 2, REALSENSE_VIDEO_HEIGHT / 2), ofVec2f(0, 0), ofVec2f(REALSENSE_VIDEO_WIDTH, REALSENSE_VIDEO_HEIGHT)));
     setupCalib->add(calibPoint_Y.set("calibrationPoint_Y", ofVec2f(REALSENSE_VIDEO_WIDTH / 2, REALSENSE_VIDEO_HEIGHT / 2), ofVec2f(0, 0), ofVec2f(REALSENSE_VIDEO_WIDTH, REALSENSE_VIDEO_HEIGHT)));
     setupCalib->add(calibPoint_Z.set("calibrationPoint_Z", ofVec2f(REALSENSE_VIDEO_WIDTH / 2, REALSENSE_VIDEO_HEIGHT / 2), ofVec2f(0, 0), ofVec2f(REALSENSE_VIDEO_WIDTH, REALSENSE_VIDEO_HEIGHT)));
-    
+ 
     setupCalib->loadFromFile("settings.xml");
 
 	////////////////////////////
@@ -99,7 +98,6 @@ void ofApp::setup(){
 
 	guitransform = gui.addPanel();
 
-	guitransform->loadTheme("theme/theme_light.json");
 	guitransform->setName("Transformation");
 
 	transformationGuiGroup.setName("Matrix");
@@ -108,10 +106,6 @@ void ofApp::setup(){
 	guitransform->addGroup(transformationGuiGroup);
 
 	guitransform->loadFromFile("transformation.xml");
-
-	bool invisible = false;
-
-	guitransform->setVisible(invisible);
 
 	updateMatrix();
 
@@ -122,26 +116,6 @@ void ofApp::setup(){
 	ofLog(OF_LOG_NOTICE) << "MainAPP: loading Device Operation GUI";
 
 	device = gui.addPanel();
-
-	/////////////////////////////
-	//   OPERATING GUI         //
-	/////////////////////////////
-
-	operating = gui.addPanel();
-	operating->loadTheme("theme/theme_light.json");
-	operating->setName("Operating");
-
-	operatingModes.setName("Modes");
-	operatingModes.add(mode0Capture.set("normal", false));
-	operatingModes.add(mode1Record.set("recording", false));
-	operatingModes.add(mode2Playback.set("playback", false));
-
-	operatingToggles = operating->addGroup(operatingModes);
-	operatingToggles->setExclusiveToggles(true);
-	operatingToggles->setConfig(ofJson({ {"type", "radio"} }));
-
-	operatingToggles->setActiveToggle(0);
-	operatingToggles->getActiveToggleIndex().addListener(this, &ofApp::changeOperation);	
 
     ////////////////////////
     //    RealSense       // 
@@ -159,43 +133,21 @@ void ofApp::setup(){
     /////////////////
 	// creating preview point cloud is bogging the system down, so switched off at startup
 	bPreviewPointCloud = false;
-    
+ 
     setupViewports();
 
     createHelp();
     
     capMesh.reSize(4);
-    
+
 	if (ofIsGLProgrammableRenderer()) {
 		ofLog(OF_LOG_NOTICE) << "ofIsGLProgrammableRenderer() = " << ofToString(ofIsGLProgrammableRenderer());
 	}
 }
 
-void ofApp::changeOperation(int& _index) {
-
-	switch (_index) {
-	case 0:
-		if (realSense->capture()) {
-			createGUIDeviceParams();
-			setupViewports();
-		}
-		break;
-	case 1:
-		if (realSense->record()) {
-			createGUIDeviceParams();
-			setupViewports();
-		}
-		break;
-	case 2:
-		if (realSense->playback()) {
-		}
-		break;
-	}
-}
-
 void ofApp::createGUIDeviceParams() {
+
 	device->clear();
-	device->loadTheme("theme/theme_light.json");
 	device->setName("RealSense Device");
 	device->add<ofxGuiLabel>(realSense->getSerialNumber(-1));
 
@@ -222,50 +174,12 @@ void ofApp::setupViewports(){
 	device->setWidth(MENU_WIDTH / 4);
 	post->setWidth(MENU_WIDTH / 4);
 	setupCalib->setWidth(MENU_WIDTH / 4);
-	blobFinder.panel->setWidth(MENU_WIDTH / 4);
-	networkMng.panel->setWidth(MENU_WIDTH / 4);
-	operating->setWidth(MENU_WIDTH / 4);
+    guitransform->setWidth(MENU_WIDTH);
 
-	device->setPosition(ofGetWidth() - MENU_WIDTH, 20);
-	post->setPosition(ofGetWidth() - MENU_WIDTH, 400);
-	operating->setPosition(ofGetWidth() - MENU_WIDTH, 800);
-	setupCalib->setPosition(ofGetWidth() - MENU_WIDTH / 4 * 3, 20);
-	blobFinder.panel->setPosition(ofGetWidth() - MENU_WIDTH / 4 * 2, 20);
-	networkMng.panel->setPosition(ofGetWidth() - MENU_WIDTH / 4, 20);
-    //ofLog(OF_LOG_NOTICE, "ofGetWidth()" + ofToString(ofGetWidth()));
-
-    
-	//
-	//--
-}
-
-void ofApp::updateFrustumCone(int & value){
-    if(realSense != NULL && realSense->isRunning()){
-		double ref_pix_size = 1;// kinect.getZeroPlanePixelSize();
-		double ref_distance = 1;// kinect.getZeroPlaneDistance();
-        
-        realSenseFrustum.near1 = nearFrustum.get();
-        realSenseFrustum.far1 = farFrustum.get();
-        
-        double factorNear = 2 * ref_pix_size * realSenseFrustum.near1 / ref_distance;
-        double factorFar = 2 * ref_pix_size * realSenseFrustum.far1 / ref_distance;
-        
-        //ofVec3f((x - DEPTH_X_RES/2) *factor, (y - DEPTH_Y_RES/2) *factor, raw[y * w + x]));
-        
-        realSenseFrustum.left = (0 - DEPTH_X_RES/2) *factorNear;
-        realSenseFrustum.right = (640 - DEPTH_X_RES/2) *factorNear;
-        realSenseFrustum.top = (0 - DEPTH_Y_RES/2) *factorNear;
-        realSenseFrustum.bottom = (480 - DEPTH_Y_RES/2) *factorNear;
-        
-        realSenseFrustum.leftFar = (0 - DEPTH_X_RES/2) *factorFar;
-        realSenseFrustum.rightFar = (640 - DEPTH_X_RES/2) *factorFar;
-        realSenseFrustum.topFar = (0 - DEPTH_Y_RES/2) *factorFar;
-        realSenseFrustum.bottomFar = (480 - DEPTH_Y_RES/2) *factorFar;
-        
-        realSenseFrustum.update();
-        //createFrustumCone();
-    }
-    
+	device->setPosition(ofGetWidth() - MENU_WIDTH / 2, 20);
+	post->setPosition(ofGetWidth() - MENU_WIDTH / 2, 400);
+	setupCalib->setPosition(ofGetWidth() - MENU_WIDTH / 4, 20);
+    guitransform->setPosition(ofGetWidth() - MENU_WIDTH / 4, 600);
 }
 
 void ofApp::measurementCycleRaw(){
@@ -276,7 +190,7 @@ void ofApp::measurementCycleRaw(){
 		if (planePoint1Meas[cycleCounter].z > 0 &&
 			planePoint2Meas[cycleCounter].z > 0 &&
 			planePoint3Meas[cycleCounter].z > 0) {
-        cycleCounter++;
+			cycleCounter++;
 		}
     } else {
         planePoint_X = ofVec3f();
@@ -406,7 +320,7 @@ void ofApp::updateCalc(){
     calcdata += "distance to Z: " + ofToString(planePoint_Z.length()) + "\n";
 	calcdata += "distance X to Z: " + ofToString(ofVec3f(planePoint_X - planePoint_Z).length()) + "\n";
 	calcdata += "distance Y to Z: " + ofToString(ofVec3f(planePoint_Y - planePoint_Z).length()) + "\n";
-
+    
     bUpdateCalc = false;
     
 	ofLog(OF_LOG_NOTICE) << "updating... ";
@@ -427,11 +341,7 @@ void ofApp::updateMatrix(){
 	sphere_Y.setRadius(0.05);
 	sphere_Z.setRadius(0.05);
 
-    //deviceTransform = ofMatrix4x4();
-    
-	deviceTransform = transformation.get();
-
-    //blobFinder.kinectPos = ofVec3f(0, 0, transformation.get().z);    
+	deviceTransform = transformation.get(); 
 }
 
 //--------------------------------------------------------------
@@ -447,7 +357,7 @@ glm::vec3 ofApp::calcPlanePoint(ofParameter<ofVec2f> & cpoint, int size, int ste
     int minY = ((cpoint.get().y - size) >= 0)?(cpoint.get().y - size): 0;
     int maxX = ((cpoint.get().x + size) < width)?(cpoint.get().x + size): width - 1;
     int maxY = ((cpoint.get().y + size) < height)?(cpoint.get().y + size): height - 1;
-      
+
 	glm::vec3 coord;
     for(int y = minY; y < maxY + 1; y += step) {
         for(int x = minX; x < maxX + 1; x += step) {
@@ -478,7 +388,7 @@ void ofApp::update(){
         if(bUpdateMeasurmentFine){
             measurementCycleFine();
         }
-	}
+    }
 }
 
 //--------------------------------------------------------------
@@ -491,7 +401,7 @@ void ofApp::draw(){
         //Draw viewport previews
 		realSense->drawDepthStream(viewGrid[0]);
 		realSense->drawInfraLeftStream(viewGrid[1]);
-
+        
         switch (iMainCamera) {
             case 0:
 				realSense->drawDepthStream(viewMain);
@@ -501,7 +411,7 @@ void ofApp::draw(){
 				realSense->drawInfraLeftStream(viewMain);
                 drawCalibrationPoints();
                 break;
-            case 2:
+			case 2:
                 previewCam.begin(viewMain);
                 mainGrid.drawPlane(5., 5, false);
                 drawPreview();
@@ -512,8 +422,8 @@ void ofApp::draw(){
         }
         
         //Draw opengl viewport previews (ofImages dont like opengl calls before they are drawn
-        if(iMainCamera != 5){ // make sure the camera is drawn only once (so the interaction with the mouse works)
-            previewCam.begin(viewGrid[5]);
+        if(iMainCamera != 2){ // make sure the camera is drawn only once (so the interaction with the mouse works)
+            previewCam.begin(viewGrid[2]);
             mainGrid.drawPlane(5., 5, false);
             drawPreview();
             previewCam.end();
@@ -527,15 +437,9 @@ void ofApp::draw(){
         ofSetLineWidth(3);
         ofDrawRectangle(viewGrid[iMainCamera]);
     } else {
-
-        blobFinder.contourEyeFinder.draw(viewMain);
-
         ofNoFill();
         ofSetColor(255, 0, 255, 255);
-        blobFinder.drawBodyBlobs2d(viewMain);
     }
-
-    //--
     
 
 	// draw instructions
@@ -566,17 +470,15 @@ void ofApp::drawPreview() {
 	if (bPreviewPointCloud) {
 		realSense->draw();
 	}
+
 	ofFill();
 	ofSetColor(255, 0, 0);
 	sphere_X.draw();
 	sphere_Y.draw();
 	sphere_Z.draw();
-	/*
-	frustumCenterSphere.draw();
-	*/
 
 	geometry.draw();
-
+    
 	glDisable(GL_DEPTH_TEST);
 	ofPopMatrix();
 }
@@ -601,30 +503,19 @@ void ofApp::exit() {
     ofLog(OF_LOG_NOTICE) << "exiting application...";
 
 	realSense->stop();
-	
 }
 
 void ofApp::createHelp(){
     help = string("press v -> to show visualizations\n");
-	help += "press 1 - 6 -> to change the viewport\n";
 	help += "press p -> to show pointcloud\n";
+	help += "press 1 - 3 -> to change the viewport\n";
     help += "press h -> to show help \n";
     help += "press s -> to save current settings.\n";
 	help += "press l -> to load last saved settings\n";
-	help += "press m -> to update mask image CAREFULL: press m again to stop updating (" + ofToString(bUpdateImageMask) + ")\n";
-	help += "press c -> to clear mask image\n";
 	help += "press x|y|z and then mouse-click -> to change the calibration points in viewport 1\n";
 	help += "press k -> to update the calculation\n";
 	help += "press r -> to show calculation results \n";
-	help += "press t -> to terminate the connection, connection is: " + ofToString(realSense->isRunning()) + "\n";
-	help += "press o -> to open the connection again\n";
-    help += "ATTENTION: Setup-Settings (ServerID and Video) will only apply after restart\n";
- 	help += "Broadcasting ip: "+networkMng.broadcastIP.get()+" port: "+ofToString(networkMng.broadcastPort.get())+" serverID: "+ofToString(networkMng.mServerID)+" \n";
-    /*
-     help += "using opencv threshold = " + ofToString(bThreshWithOpenCV) + " (press spacebar)\n";
-     help += "set near threshold " + ofToString(nearThreshold) + " (press: + -)\n";
-     help += "set far threshold " + ofToString(farThreshold) + " (press: < >) num blobs found " + ofToString(contourFinder.nBlobs) + "\n";
-     */
+    help += "ATTENTION: Setup-Settings (Video) will only apply after restart\n";
 }
 
 //--------------------------------------------------------------
@@ -641,14 +532,6 @@ void ofApp::keyPressed(int key){
 		case'v':
 			bShowVisuals = !bShowVisuals;
             break;
-            
-		case 'c':
-			blobFinder.clearMask();
-			break;
-			
-		case 't':
-			//kinect.close();
-			break;
             
         case 'r':
             bShowCalcData = !bShowCalcData;
@@ -678,36 +561,6 @@ void ofApp::keyPressed(int key){
                 createHelp();
             }
 			break;
-            
-		case '>':
-		case '.':
-			//farThreshold ++;
-			//if (farThreshold > 255) farThreshold = 255;
-			break;
-			
-		case '<':
-		case ',':
-			//farThreshold --;
-			//if (farThreshold < 0) farThreshold = 0;
-			break;
-			
-		case '+':
-		case '=':
-			//nearThreshold ++;
-			//if (nearThreshold > 255) nearThreshold = 255;
-			break;
-			
-		case '-':
-			//nearThreshold --;
-			//if (nearThreshold < 0) nearThreshold = 0;
-			break;
-			
-		case 'm':
-			bUpdateImageMask = !bUpdateImageMask;
-			if (bUpdateImageMask) {
-				blobFinder.clearMask();
-			}
-			break;
 						
 		case 'x':
 			bUpdateSetMesurmentPoint = key;
@@ -720,41 +573,18 @@ void ofApp::keyPressed(int key){
 		case 'z':
 			bUpdateSetMesurmentPoint = key;
 			break;
-
-		case '0':
-			//kinect.setLed(ofxKinect::LED_OFF);
-			break;
             
 		case '1':
             iMainCamera = 0;
-			//kinect.setLed(ofxKinect::LED_GREEN);
 			break;
 			
 		case '2':
             iMainCamera = 1;
-			//kinect.setLed(ofxKinect::LED_YELLOW);
 			break;
 			
 		case '3':
             iMainCamera = 2;
-			//kinect.setLed(ofxKinect::LED_RED);
-			break;
-			
-		case '4':
-            iMainCamera = 3;
-			//kinect.setLed(ofxKinect::LED_BLINK_GREEN);
-			break;
-			
-		case '5':
-            iMainCamera = 4;
-			//kinect.setLed(ofxKinect::LED_BLINK_YELLOW_RED);
-			break;
-            
-		case '6':
-            iMainCamera = 5;
-			//kinect.setLed(ofxKinect::LED_BLINK_YELLOW_RED);
-			break;
-						            
+			break;				            
 	}
 
 }
@@ -806,12 +636,6 @@ void ofApp::mouseReleased(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
-	/*
-    cairo->setupMemoryOnly(ofCairoRenderer::IMAGE,
-                           false, false,
-                           ofRectangle(0, 0, w, h));
-    render.allocate(w, h, GL_RGBA);
-	*/
 	setupViewports();
 }
 
