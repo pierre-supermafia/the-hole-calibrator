@@ -1,0 +1,8 @@
+obj/
+bin/
+addons.make
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+.vs/
