@@ -273,7 +273,11 @@ void ofApp::measurementCycleRaw(){
         planePoint1Meas[cycleCounter] = calcPlanePoint(calibPoint_X, 0, 1);
         planePoint2Meas[cycleCounter] = calcPlanePoint(calibPoint_Y, 0, 1);
         planePoint3Meas[cycleCounter] = calcPlanePoint(calibPoint_Z, 0, 1);
+		if (planePoint1Meas[cycleCounter].z > 0 &&
+			planePoint2Meas[cycleCounter].z > 0 &&
+			planePoint3Meas[cycleCounter].z > 0) {
         cycleCounter++;
+		}
     } else {
         planePoint_X = ofVec3f();
         planePoint_Y = ofVec3f();
@@ -434,8 +438,8 @@ void ofApp::updateMatrix(){
 glm::vec3 ofApp::calcPlanePoint(ofParameter<ofVec2f> & cpoint, int size, int step){
 	glm::vec3 ppoint;
 
-	int width = realSense->getDepthWidth();
-    int height = realSense->getDepthHeight();
+	int width = 2 * realSense->getDepthWidth();
+    int height = 2 * realSense->getDepthHeight();
    
     int counter = 0;
     
@@ -445,11 +449,10 @@ glm::vec3 ofApp::calcPlanePoint(ofParameter<ofVec2f> & cpoint, int size, int ste
     int maxY = ((cpoint.get().y + size) < height)?(cpoint.get().y + size): height - 1;
       
 	glm::vec3 coord;
-    
-    for(int y = minY; y <= maxY; y = y + step) {
-        for(int x = minX; x <= maxX; x = x + step) {
+    for(int y = minY; y < maxY + 1; y += step) {
+        for(int x = minX; x < maxX + 1; x += step) {
  			coord = realSense->getSpacePointFromInfraLeftFrameCoord(glm::vec2(x, y));
-            if(coord.z > 0) {
+            if(coord.z != 0) {
 				ppoint += coord;
                 counter++;
             }
