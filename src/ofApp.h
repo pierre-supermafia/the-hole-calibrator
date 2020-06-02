@@ -101,15 +101,10 @@ class ofApp : public ofBaseApp{
     ofVboMesh previewmesh;//, capturemesh;
     
     CaptureMeshArray capMesh;
-    
-    Frustum realSenseFrustum;
 
     void drawPreview();
 
 	void createGUIDeviceParams();
-
-    void createFrustumCone();
-    void updateFrustumCone(int & value);
 
     ///////////////
     //CALCULATION//
@@ -143,9 +138,6 @@ class ofApp : public ofBaseApp{
     ofSpherePrimitive sphere_X;
     ofSpherePrimitive sphere_Y;
     ofSpherePrimitive sphere_Z;
-    
-    ofSpherePrimitive frustumCenterSphere;
-    ofSpherePrimitive frustumTopSphere;
 
     ofVboMesh geometry;
         

@@ -9,7 +9,7 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 
-	ofLog(OF_LOG_NOTICE, "MainAPP: looking for RealSense Device...");
+	ofLog(OF_LOG_NOTICE) << "MainAPP: looking for RealSense Device...";
 
 	ofSetLogLevel(OF_LOG_VERBOSE);
 
@@ -21,7 +21,7 @@ void ofApp::setup(){
 
 	realSense->setVideoSize(REALSENSE_VIDEO_WIDTH, REALSENSE_VIDEO_HEIGHT);
 
-	ofLog(OF_LOG_NOTICE, "... RealSense Device found.");
+	ofLog(OF_LOG_NOTICE) << "... RealSense Device found.";
 
 	// we don't want to be running to fast
 	//ofSetVerticalSync(true);
@@ -56,7 +56,7 @@ void ofApp::setup(){
 	/////////////////////////////
 	//   REALSENSE GUI   SETUP //
 	/////////////////////////////
-	ofLog(OF_LOG_NOTICE, "MainAPP: loading postprocessing GUI");
+	ofLog(OF_LOG_NOTICE) << "MainAPP: loading postprocessing GUI";
 
 	post = gui.addPanel();
 	post->loadTheme("theme/theme_light.json");
@@ -80,7 +80,7 @@ void ofApp::setup(){
     /////////////////////////////
     //CALIBRATION GUI   SETUP //
     ////////////////////////////
-	ofLog(OF_LOG_NOTICE, "MainAPP: loading calibration settings");
+	ofLog(OF_LOG_NOTICE) << "MainAPP: loading calibration settings";
 
     setupCalib = gui.addPanel();
     
@@ -95,7 +95,7 @@ void ofApp::setup(){
 	////////////////////////////
 	//   GUI   Transfromation //
 	////////////////////////////
-	ofLog(OF_LOG_NOTICE, "MainAPP: loading transformation matrix");
+	ofLog(OF_LOG_NOTICE) << "MainAPP: loading transformation matrix";
 
 	guitransform = gui.addPanel();
 
@@ -119,7 +119,7 @@ void ofApp::setup(){
 	//   GUI   DEVICE PARAMS   //
 	/////////////////////////////
 
-	ofLog(OF_LOG_NOTICE, "MainAPP: loading Device Operation GUI");
+	ofLog(OF_LOG_NOTICE) << "MainAPP: loading Device Operation GUI";
 
 	device = gui.addPanel();
 
@@ -147,14 +147,14 @@ void ofApp::setup(){
     //    RealSense       // 
     ////////////////////////
 
-	ofLog(OF_LOG_NOTICE, "MainAPP: starting attached Device...");
+	ofLog(OF_LOG_NOTICE) << "MainAPP: starting attached Device...";
 
 	// firing up the device, creating the GUI and loading the device parameters
 	if (realSense->capture()) {
 		createGUIDeviceParams();
 	}
 
-	ofLog(OF_LOG_NOTICE, "...starting attached Device done.");
+	ofLog(OF_LOG_NOTICE) << "...starting attached Device done.";
 
     /////////////////
 	// creating preview point cloud is bogging the system down, so switched off at startup
@@ -167,7 +167,7 @@ void ofApp::setup(){
     capMesh.reSize(4);
     
 	if (ofIsGLProgrammableRenderer()) {
-		ofLog(OF_LOG_NOTICE, "ofIsGLProgrammableRenderer() = " + ofToString(ofIsGLProgrammableRenderer()));
+		ofLog(OF_LOG_NOTICE) << "ofIsGLProgrammableRenderer() = " << ofToString(ofIsGLProgrammableRenderer());
 	}
 }
 
@@ -405,7 +405,7 @@ void ofApp::updateCalc(){
 
     bUpdateCalc = false;
     
- //   ofLog(OF_LOG_NOTICE, "updating... ");
+	ofLog(OF_LOG_NOTICE) << "updating... ";
 
 	transformation.set(ofMatrix4x4(transform));
 
@@ -601,7 +601,7 @@ void ofApp::drawCalibrationPoints(){
 
 //--------------------------------------------------------------
 void ofApp::exit() {
-    ofLog(OF_LOG_NOTICE, "exiting application...");
+    ofLog(OF_LOG_NOTICE) << "exiting application...";
 
 	realSense->stop();
 	
