@@ -8,16 +8,6 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-#ifdef TARGET_OPENGLES
-	shader.load("shadersES2/shader");
-#else
-	if (ofIsGLProgrammableRenderer()) {
-		shader.load("shadersGL3/shader");
-	}
-	else {
-		shader.load("shadersGL2/shader");
-	}
-#endif
 
 	ofLog(OF_LOG_NOTICE, "MainAPP: looking for RealSense Device...");
 
@@ -59,16 +49,9 @@ void ofApp::setup(){
 
     iMainCamera = 0;
     
-    previewCam.setUpAxis(glm::vec3(0, 0, 1));
-    previewCam.setTranslationSensitivity(2., 2., 2.);
+	previewCam.setUpAxis(glm::vec3(0, 0, 1));
+	previewCam.setTranslationSensitivity(2., 2., 2.);
 	previewCam.setNearClip(0.001f);
-
-	////////////////////
-	//  BLOBFINDER    //
-	////////////////////
-	ofLog(OF_LOG_NOTICE, "MainAPP: setting up blobfinder");
-
-	blobFinder.setup(gui);
 
 	/////////////////////////////
 	//   REALSENSE GUI   SETUP //
@@ -101,25 +84,12 @@ void ofApp::setup(){
 
     setupCalib = gui.addPanel();
     
-    setupCalib->loadTheme("theme/theme_light.json");
     setupCalib->setName("Calibration Panel");
     
-    setupCalib->add(blobGrain.set("Grain", 2, 1, 10));
-
     setupCalib->add(calibPoint_X.set("calibrationPoint_X", ofVec2f(REALSENSE_VIDEO_WIDTH / 2, REALSENSE_VIDEO_HEIGHT / 2), ofVec2f(0, 0), ofVec2f(REALSENSE_VIDEO_WIDTH, REALSENSE_VIDEO_HEIGHT)));
     setupCalib->add(calibPoint_Y.set("calibrationPoint_Y", ofVec2f(REALSENSE_VIDEO_WIDTH / 2, REALSENSE_VIDEO_HEIGHT / 2), ofVec2f(0, 0), ofVec2f(REALSENSE_VIDEO_WIDTH, REALSENSE_VIDEO_HEIGHT)));
     setupCalib->add(calibPoint_Z.set("calibrationPoint_Z", ofVec2f(REALSENSE_VIDEO_WIDTH / 2, REALSENSE_VIDEO_HEIGHT / 2), ofVec2f(0, 0), ofVec2f(REALSENSE_VIDEO_WIDTH, REALSENSE_VIDEO_HEIGHT)));
     
-    nearFrustum.addListener(this, &ofApp::updateFrustumCone);
-    farFrustum.addListener(this, &ofApp::updateFrustumCone);
-
-    frustumGuiGroup.setName("frustumField");
-    frustumGuiGroup.add(nearFrustum.set("nearFrustum", 400, 200, 2000));
-    frustumGuiGroup.add(farFrustum.set("farFrustum", 4000, 2000, 10000));
-    setupCalib->addGroup(frustumGuiGroup);
-    
-    //setupCalib->add(transformation.set("matrix rx ry tz", ofVec3f(0, 0, 0), ofVec3f(-90, -90, -6000), ofVec3f(90, 90, 6000)));
- 
     setupCalib->loadFromFile("settings.xml");
 
 	////////////////////////////
@@ -190,26 +160,12 @@ void ofApp::setup(){
 	// creating preview point cloud is bogging the system down, so switched off at startup
 	bPreviewPointCloud = false;
     
-	ofLog(OF_LOG_NOTICE, "MainAPP: setting up networking...");
-	
-	networkMng.setup(gui, realSense->getSerialNumber(-1));
-
-	ofLog(OF_LOG_NOTICE, "...networking done.");
-
-    int * val = 0;
-    updateFrustumCone(*val);
- 
     setupViewports();
 
     createHelp();
     
     capMesh.reSize(4);
     
-    ofSetLogLevel(OF_LOG_NOTICE);
-    
-	ofSetLogLevel(OF_LOG_VERBOSE);
-    //ofLogToFile("myLogFile.txt", true);
-
 	if (ofIsGLProgrammableRenderer()) {
 		ofLog(OF_LOG_NOTICE, "ofIsGLProgrammableRenderer() = " + ofToString(ofIsGLProgrammableRenderer()));
 	}
@@ -447,8 +403,6 @@ void ofApp::updateCalc(){
 	calcdata += "distance X to Z: " + ofToString(ofVec3f(planePoint_X - planePoint_Z).length()) + "\n";
 	calcdata += "distance Y to Z: " + ofToString(ofVec3f(planePoint_Y - planePoint_Z).length()) + "\n";
 
-    frustumCenterSphere.setRadius(20);
-    
     bUpdateCalc = false;
     
  //   ofLog(OF_LOG_NOTICE, "updating... ");
@@ -527,29 +481,6 @@ void ofApp::update(){
         if(bUpdateMeasurmentFine){
             measurementCycleFine();
         }
-
-		if (bUpdateImageMask) {
-			blobFinder.captureMaskBegin();
-			drawCapturePointCloud(true);
-			blobFinder.captureMaskEnd();
-		}
-		else {
-			//////////////////////////////////
-			// Cature captureCloud to FBO
-			//////////////////////////////////
-
-			blobFinder.captureBegin();
-			drawCapturePointCloud(false);
-			blobFinder.captureEnd();
-
-			//////////////////////////////////
-			// BlobFinding on the captured FBO
-			/////////////////////////////////////
-			blobFinder.update();
-
-			networkMng.update(blobFinder, realSenseFrustum, transformation.get());
-		}
-    
 	}
 }
 
@@ -564,11 +495,6 @@ void ofApp::draw(){
 		realSense->drawDepthStream(viewGrid[0]);
 		realSense->drawInfraLeftStream(viewGrid[1]);
 
-        blobFinder.grayImage.draw(viewGrid[2]);
-        blobFinder.contourFinder.draw(viewGrid[3]);
-        blobFinder.maskFbo.draw(viewGrid[4]);
-
-        
         switch (iMainCamera) {
             case 0:
 				realSense->drawDepthStream(viewMain);
@@ -579,29 +505,6 @@ void ofApp::draw(){
                 drawCalibrationPoints();
                 break;
             case 2:
-                blobFinder.grayImage.draw(viewMain);
-				ofSetColor(255, 0, 0, 255);
-				blobFinder.contourFinder.draw(viewMain);
-				
-				break;
-            case 3:
-				blobFinder.fbo.draw(viewMain);
-				ofSetColor(255, 0, 0, 255);
-				blobFinder.contourFinder.draw(viewMain);
-
-                ofNoFill();
-                ofSetColor(255, 0, 255, 255);
-                blobFinder.drawBodyBlobs2d(viewMain);
-                
-               break;
-            case 4:
-				blobFinder.maskFbo.draw(viewMain);
-
-                ofNoFill();
-                ofSetColor(255, 0, 255, 255);
-                blobFinder.drawBodyBlobs2d(viewMain);
-                break;
-            case 5:
                 previewCam.begin(viewMain);
                 mainGrid.drawPlane(5., 5, false);
                 drawPreview();
@@ -677,61 +580,8 @@ void ofApp::drawPreview() {
 
 	geometry.draw();
 
-	//ofSetColor(0, 0, 255);
-	//realSenseFrustum.drawWireframe();
-	
-	ofPopMatrix();
-
-	ofPushMatrix();
-
-    ofSetColor(255, 255, 0);
-    blobFinder.drawSensorBox();
-
-    ofNoFill();
-    ofSetColor(255, 100, 255);
-    blobFinder.drawBodyBlobsBox();
-    blobFinder.drawBodyBlobsHeadTop();
-
-    ofFill();
-    ofSetColor(255, 100, 100);
-    blobFinder.drawGazePoint();
-
-    
 	glDisable(GL_DEPTH_TEST);
 	ofPopMatrix();
-    
-}
-
-void ofApp::drawCapturePointCloud(bool _mask) {
-    glEnable(GL_DEPTH_TEST);
-
-	shader.begin();
-
-	float lowerLimit = blobFinder.sensorBoxBottom.get() / 1000.f;
-	float upperLimit = blobFinder.sensorBoxTop.get() / 1000.f;
-
-	if (_mask) {
-		//ofClear(255, 255, 255, 255);
-		shader.setUniform1i("mask", 1);
-		glPointSize(blobGrain.get() * 4);
-	}
-	else {
-		shader.setUniform1i("mask", 0);
-		glPointSize(blobGrain.get() * 2);
-	}
-	shader.setUniform1f("lowerLimit", lowerLimit);
-	shader.setUniform1f("upperLimit", upperLimit);
-	shader.setUniformMatrix4f("viewMatrixInverse", glm::inverse(ofGetCurrentViewMatrix()));
-
-	ofPushMatrix();
-	ofMultMatrix(deviceTransform);
-	realSense->draw();
-	ofPopMatrix();
-	
-	shader.end();
-	
-	glDisable(GL_DEPTH_TEST);
-
 }
 
 void ofApp::drawCalibrationPoints(){
@@ -813,9 +663,6 @@ void ofApp::keyPressed(int key){
  
         case 's':
             setupCalib->saveToFile("settings.xml");
-            blobFinder.panel->saveToFile("trackings.xml");
-			blobFinder.saveMask();
-			networkMng.panel->saveToFile("broadcast.xml");
 			post->saveToFile("postprocessing.xml");
 			device->saveToFile(realSense->getSerialNumber(-1) + ".xml");
 			guitransform->saveToFile("transformation.xml");
@@ -823,9 +670,6 @@ void ofApp::keyPressed(int key){
 
         case 'l':
             setupCalib->loadFromFile("settings.xml");
-            blobFinder.panel->loadFromFile("trackings.xml");
-			blobFinder.loadMask();
-            networkMng.panel->loadFromFile("broadcast.xml");
 			post->loadFromFile("postprocessing.xml");
 			device->loadFromFile(realSense->getSerialNumber(-1) + ".xml");
 			guitransform->loadFromFile("transformation.xml");
