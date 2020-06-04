@@ -87,7 +87,7 @@ void ofApp::setup(){
 
     setupCalib->add(calibPoint_X.set("calibrationPoint_X", ofVec2f(REALSENSE_VIDEO_WIDTH / 2, REALSENSE_VIDEO_HEIGHT / 2), ofVec2f(0, 0), ofVec2f(REALSENSE_VIDEO_WIDTH, REALSENSE_VIDEO_HEIGHT)));
     setupCalib->add(calibPoint_Y.set("calibrationPoint_Y", ofVec2f(REALSENSE_VIDEO_WIDTH / 2, REALSENSE_VIDEO_HEIGHT / 2), ofVec2f(0, 0), ofVec2f(REALSENSE_VIDEO_WIDTH, REALSENSE_VIDEO_HEIGHT)));
-    setupCalib->add(calibPoint_Z.set("calibrationPoint_Z", ofVec2f(REALSENSE_VIDEO_WIDTH / 2, REALSENSE_VIDEO_HEIGHT / 2), ofVec2f(0, 0), ofVec2f(REALSENSE_VIDEO_WIDTH, REALSENSE_VIDEO_HEIGHT)));
+    setupCalib->add(calibPoint_O.set("calibrationPoint_Z", ofVec2f(REALSENSE_VIDEO_WIDTH / 2, REALSENSE_VIDEO_HEIGHT / 2), ofVec2f(0, 0), ofVec2f(REALSENSE_VIDEO_WIDTH, REALSENSE_VIDEO_HEIGHT)));
  
     setupCalib->loadFromFile("settings.xml");
 
@@ -186,7 +186,7 @@ void ofApp::measurementCycleRaw(){
     if(cycleCounter < N_MEASURMENT_CYCLES){
         planePoint1Meas[cycleCounter] = calcPlanePoint(calibPoint_X, 0, 1);
         planePoint2Meas[cycleCounter] = calcPlanePoint(calibPoint_Y, 0, 1);
-        planePoint3Meas[cycleCounter] = calcPlanePoint(calibPoint_Z, 0, 1);
+        planePoint3Meas[cycleCounter] = calcPlanePoint(calibPoint_O, 0, 1);
 		if (planePoint1Meas[cycleCounter].z > 0 &&
 			planePoint2Meas[cycleCounter].z > 0 &&
 			planePoint3Meas[cycleCounter].z > 0) {
@@ -195,15 +195,15 @@ void ofApp::measurementCycleRaw(){
     } else {
         planePoint_X = ofVec3f();
         planePoint_Y = ofVec3f();
-        planePoint_Z = ofVec3f();
+        planePoint_O = ofVec3f();
         for(int y = 0; y < N_MEASURMENT_CYCLES; y++){
             planePoint_X += planePoint1Meas[y];
             planePoint_Y += planePoint2Meas[y];
-            planePoint_Z += planePoint3Meas[y];
+            planePoint_O += planePoint3Meas[y];
         }
         planePoint_X /= N_MEASURMENT_CYCLES;
         planePoint_Y /= N_MEASURMENT_CYCLES;
-        planePoint_Z /= N_MEASURMENT_CYCLES;
+        planePoint_O /= N_MEASURMENT_CYCLES;
         bUpdateMeasurment = false;
         bUpdateMeasurmentFine = true;
         cycleCounter = 0;
@@ -214,13 +214,13 @@ void ofApp::measurementCycleFine(){
     if(cycleCounter < N_MEASURMENT_CYCLES){
         ofVec3f p1meas = calcPlanePoint(calibPoint_X, 0, 1);
         ofVec3f p2meas = calcPlanePoint(calibPoint_Y, 0, 1);
-        ofVec3f p3meas = calcPlanePoint(calibPoint_Z, 0, 1);
+        ofVec3f p3meas = calcPlanePoint(calibPoint_O, 0, 1);
         if(planePoint_X.z / 1.05 < p1meas.z &&
            p1meas.z < planePoint_X.z * 1.05 &&
            planePoint_Y.z / 1.05 < p2meas.z &&
            p2meas.z < planePoint_Y.z * 1.05 &&
-           planePoint_Z.z / 1.05 < p3meas.z &&
-           p3meas.z < planePoint_Z.z * 1.05){
+           planePoint_O.z / 1.05 < p3meas.z &&
+           p3meas.z < planePoint_O.z * 1.05){
             planePoint1Meas[cycleCounter] = p1meas;
             planePoint2Meas[cycleCounter] = p2meas;
             planePoint3Meas[cycleCounter] = p3meas;
@@ -229,15 +229,15 @@ void ofApp::measurementCycleFine(){
     } else {
         planePoint_X = ofVec3f();
         planePoint_Y = ofVec3f();
-        planePoint_Z = ofVec3f();
+        planePoint_O = ofVec3f();
         for(int y = 0; y < N_MEASURMENT_CYCLES; y++){
             planePoint_X += planePoint1Meas[y];
             planePoint_Y += planePoint2Meas[y];
-            planePoint_Z += planePoint3Meas[y];
+            planePoint_O += planePoint3Meas[y];
         }
         planePoint_X /= N_MEASURMENT_CYCLES;
         planePoint_Y /= N_MEASURMENT_CYCLES;
-        planePoint_Z /= N_MEASURMENT_CYCLES;
+        planePoint_O /= N_MEASURMENT_CYCLES;
         bUpdateMeasurmentFine = false;
         cycleCounter = 0;
         updateCalc();
@@ -250,22 +250,20 @@ void ofApp::updateCalc(){
 	// This algorithm calculates the transformation matrix to 
 	// transform from the camera centered coordinate system to the
 	// calibration points defined coordinate system, where
-	//   point z represents the coordinate center
+	//   point o represents the coordinate center
 	//   point x represents the x - axis from the coordinate center
 	//   point y represents the y - axis from the coordinate center
 
 	// translation vector to new coordinate system
-	glm::vec3 translate = glm::vec3(planePoint_Z);
+	glm::vec3 translate = glm::vec3(planePoint_O);
 
-	glm::vec3 newXAxis = glm::normalize(glm::vec3(planePoint_X - planePoint_Z));
-	glm::vec3 newYAxis = glm::normalize(glm::vec3(planePoint_Y - planePoint_Z));
+	glm::vec3 newXAxis = glm::normalize(glm::vec3(planePoint_X - planePoint_O));
+	glm::vec3 newYAxis = glm::normalize(glm::vec3(planePoint_Y - planePoint_O));
 	glm::vec3 newZAxis = glm::cross(newXAxis, newYAxis);
 
-	// we calculate the Y axis from the Z axis to make sure all the vectors are perpendicular to each other
-	// CAREFULL: It could be disabled because:
-	//   Using nonperpendicular axis inspired from the point cloud data seems to 
-	//   correct some of point cloud distortions....
-	newYAxis = glm::cross(newZAxis, newXAxis);
+	// Uncomment the next line in case there could be some conditions
+	// where it is preferable to have an orthogonal basis
+	// newYAxis = glm::cross(newZAxis, newXAxis);
 
 	// the following solution was inspired by this post: https://stackoverflow.com/questions/34391968/how-to-find-the-rotation-matrix-between-two-coordinate-systems
 	// however: it uses a 4x4 matrix and puts translation data as follows:
@@ -314,12 +312,12 @@ void ofApp::updateCalc(){
     calcdata = string("distance to new coordinate center point: " + ofToString(glm::length(translate)) + "\n");
 	calcdata += "position point X: " + ofToString(planePoint_X) + "\n";
 	calcdata += "position point Y: " + ofToString(planePoint_Y) + "\n";
-	calcdata += "position point Z: " + ofToString(planePoint_Z) + "\n";
+	calcdata += "position point Z: " + ofToString(planePoint_O) + "\n";
 	calcdata += "distance to X: " + ofToString(planePoint_X.length()) + "\n";
 	calcdata += "distance to Y: " + ofToString(planePoint_Y.length()) + "\n";
-    calcdata += "distance to Z: " + ofToString(planePoint_Z.length()) + "\n";
-	calcdata += "distance X to Z: " + ofToString(ofVec3f(planePoint_X - planePoint_Z).length()) + "\n";
-	calcdata += "distance Y to Z: " + ofToString(ofVec3f(planePoint_Y - planePoint_Z).length()) + "\n";
+    calcdata += "distance to Z: " + ofToString(planePoint_O.length()) + "\n";
+	calcdata += "distance X to Z: " + ofToString(ofVec3f(planePoint_X - planePoint_O).length()) + "\n";
+	calcdata += "distance Y to Z: " + ofToString(ofVec3f(planePoint_Y - planePoint_O).length()) + "\n";
     
     bUpdateCalc = false;
     
@@ -335,7 +333,7 @@ void ofApp::updateMatrix(){
 
 	sphere_X.setPosition(planePoint_X);
 	sphere_Y.setPosition(planePoint_Y);
-	sphere_Z.setPosition(planePoint_Z);
+	sphere_Z.setPosition(planePoint_O);
 
 	sphere_X.setRadius(0.05);
 	sphere_Y.setRadius(0.05);
@@ -488,12 +486,12 @@ void ofApp::drawCalibrationPoints(){
     ofPushStyle();
     ofSetColor(255, 0, 0);
     ofNoFill();
+    ofDrawBitmapString("o", calibPoint_O.get().x/REALSENSE_DEPTH_WIDTH*viewMain.width + VIEWGRID_WIDTH + 5, calibPoint_O.get().y -5);
     ofDrawBitmapString("x", calibPoint_X.get().x/REALSENSE_DEPTH_WIDTH*viewMain.width + VIEWGRID_WIDTH + 5, calibPoint_X.get().y -5);
     ofDrawBitmapString("y", calibPoint_Y.get().x/REALSENSE_DEPTH_WIDTH*viewMain.width + VIEWGRID_WIDTH + 5, calibPoint_Y.get().y -5);
-    ofDrawBitmapString("z", calibPoint_Z.get().x/REALSENSE_DEPTH_WIDTH*viewMain.width + VIEWGRID_WIDTH + 5, calibPoint_Z.get().y -5);
     ofDrawCircle(calibPoint_X.get().x/REALSENSE_DEPTH_WIDTH*viewMain.width + VIEWGRID_WIDTH, calibPoint_X.get().y, 2);
     ofDrawCircle(calibPoint_Y.get().x/REALSENSE_DEPTH_WIDTH*viewMain.width + VIEWGRID_WIDTH, calibPoint_Y.get().y, 2);
-    ofDrawCircle(calibPoint_Z.get().x/REALSENSE_DEPTH_WIDTH*viewMain.width + VIEWGRID_WIDTH, calibPoint_Z.get().y, 2);
+    ofDrawCircle(calibPoint_O.get().x/REALSENSE_DEPTH_WIDTH*viewMain.width + VIEWGRID_WIDTH, calibPoint_O.get().y, 2);
     ofPopStyle();
     glEnable(GL_DEPTH_TEST);
 }
@@ -512,7 +510,7 @@ void ofApp::createHelp(){
     help += "press h -> to show help \n";
     help += "press s -> to save current settings.\n";
 	help += "press l -> to load last saved settings\n";
-	help += "press x|y|z and then mouse-click -> to change the calibration points in viewport 1\n";
+	help += "press o, x, y and then mouse-click -> to change the calibration points in viewport 1\n";
 	help += "press k -> to update the calculation\n";
 	help += "press r -> to show calculation results \n";
     help += "ATTENTION: Setup-Settings (Video) will only apply after restart\n";
@@ -570,7 +568,7 @@ void ofApp::keyPressed(int key){
 			bUpdateSetMesurmentPoint = key;
 			break;
 
-		case 'z':
+		case 'o':
 			bUpdateSetMesurmentPoint = key;
 			break;
             
@@ -620,12 +618,12 @@ void ofApp::mousePressed(int x, int y, int button){
             if(0 <= posX && posX < REALSENSE_DEPTH_WIDTH &&
                0 <= posY && posY < REALSENSE_DEPTH_HEIGHT)
                 calibPoint_Y.set(glm::vec2(posX, posY));
-        }else if(bUpdateSetMesurmentPoint == 'z'){
+        }else if(bUpdateSetMesurmentPoint == 'o'){
             int posX = (x - VIEWGRID_WIDTH) / viewMain.width * REALSENSE_DEPTH_WIDTH;
             int posY = y;
             if(0 <= posX && posX < REALSENSE_DEPTH_WIDTH &&
                0 <= posY && posY < REALSENSE_DEPTH_HEIGHT)
-                calibPoint_Z.set(glm::vec2(posX, posY));
+                calibPoint_O.set(glm::vec2(posX, posY));
         }
     }
 }
