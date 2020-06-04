@@ -131,7 +131,7 @@ class ofApp : public ofBaseApp{
     
     ofVec3f planePoint_X;
     ofVec3f planePoint_Y;
-    ofVec3f planePoint_Z;
+    ofVec3f planePoint_O;
 
     ofVec3f planeCenterPoint;
 
@@ -168,7 +168,7 @@ class ofApp : public ofBaseApp{
 
     ofParameter<ofVec2f> calibPoint_X;
     ofParameter<ofVec2f> calibPoint_Y;
-    ofParameter<ofVec2f> calibPoint_Z;
+    ofParameter<ofVec2f> calibPoint_O;
  
 	ofParameterGroup transformationGuiGroup;
 
