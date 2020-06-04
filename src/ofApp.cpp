@@ -261,11 +261,9 @@ void ofApp::updateCalc(){
 	glm::vec3 newYAxis = glm::normalize(glm::vec3(planePoint_Y - planePoint_O));
 	glm::vec3 newZAxis = glm::cross(newXAxis, newYAxis);
 
-	// we calculate the Y axis from the Z axis to make sure all the vectors are perpendicular to each other
-	// CAREFULL: It could be disabled because:
-	//   Using nonperpendicular axis inspired from the point cloud data seems to 
-	//   correct some of point cloud distortions....
-	newYAxis = glm::cross(newZAxis, newXAxis);
+	// Uncomment the next line in case there could be some conditions
+	// where it is preferable to have an orthogonal basis
+	// newYAxis = glm::cross(newZAxis, newXAxis);
 
 	// the following solution was inspired by this post: https://stackoverflow.com/questions/34391968/how-to-find-the-rotation-matrix-between-two-coordinate-systems
 	// however: it uses a 4x4 matrix and puts translation data as follows:
