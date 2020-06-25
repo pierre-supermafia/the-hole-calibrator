@@ -149,7 +149,8 @@ void ofApp::createGUIDeviceParams() {
 
 	device->clear();
 	device->setName("RealSense Device");
-	device->add<ofxGuiLabel>(realSense->getSerialNumber(-1));
+	std::string serial = realSense->getSerialNumber(-1);
+	device->add<ofxGuiLabel>(serial);
 
 	intrinsicGuiGroup.clear();
 	intrinsicGuiGroup.setName("Settings");
@@ -163,8 +164,6 @@ void ofApp::createGUIDeviceParams() {
 	intrinsicGuiGroup.add(realSense->param_deviceProjectorTemparature);
 
 	device->addGroup(intrinsicGuiGroup);
-
-	device->loadFromFile(realSense->getSerialNumber(-1) + ".xml");
 }
 
 //--------------------------------------------------------------
