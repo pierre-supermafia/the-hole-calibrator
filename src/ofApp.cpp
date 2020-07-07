@@ -412,16 +412,16 @@ void ofApp::draw(){
 	ofSetColor(255, 255, 255);
 
 	//Draw viewport previews
-	realSense->drawDepthStream(viewGrid[0]);
-	realSense->drawInfraLeftStream(viewGrid[1]);
+	realSense->drawVideoStream(viewGrid[0]);
+	realSense->drawDepthStream(viewGrid[1]);
 	
 	switch (iMainCamera) {
 		case 0:
-			realSense->drawDepthStream(viewMain);
+			realSense->drawVideoStream(viewMain);
 			drawCalibrationPoints();
 			break;
 		case 1:
-			realSense->drawInfraLeftStream(viewMain);
+			realSense->drawDepthStream(viewMain);
 			drawCalibrationPoints();
 			break;
 		case 2:
@@ -456,10 +456,10 @@ void ofApp::draw(){
     
     if(bShowHelp) {
 		ofDrawBitmapString(help, 20 ,VIEWPORT_HEIGHT + 20);
-        if(bShowCalcData){
-            ofDrawBitmapString(calcdata, 20 ,VIEWPORT_HEIGHT + 20);
-        }
     }
+	if(bShowCalcData){
+		ofDrawBitmapString(calcdata, 20 ,VIEWPORT_HEIGHT + 200);
+	}
 
     ofDrawBitmapString("fps: " + ofToString(ofGetFrameRate()), ofGetWidth() - 200, 10);
 
