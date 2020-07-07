@@ -514,16 +514,17 @@ void ofApp::exit() {
 }
 
 void ofApp::createHelp(){
-    help = string("press v -> to show visualizations\n");
-	help += "press p -> to show pointcloud\n";
-	help += "press 1 - 3 -> to change the viewport\n";
-    help += "press h -> to show help \n";
-    help += "press s -> to save current settings.\n";
-	help += "press l -> to load last saved settings\n";
-	help += "press o, x, y and then mouse-click -> to change the calibration points in viewport 1\n";
-	help += "press k -> to update the calculation\n";
-	help += "press r -> to show calculation results \n";
-    help += "ATTENTION: Setup-Settings (Video) will only apply after restart\n";
+	stringstream helpStream;
+	helpStream << "press o, x, z and then mouse-click -> to change the calibration points\n";
+	helpStream << "press k -> to update the transformation\n";
+	helpStream << "press r -> view calculation results\n";
+    helpStream << "press s -> to save current settings.\n";
+	helpStream << "press l -> to load last saved settings\n";
+	helpStream << "\n";
+	helpStream << "press 1 - 3 -> to change the viewport\n";
+	helpStream << "press p -> to show pointcloud\n";
+    helpStream << "press h -> to show help \n";
+	help = helpStream.str();
 }
 
 //--------------------------------------------------------------
