@@ -53,9 +53,12 @@ void ofApp::setup(){
 	previewCam.setTranslationSensitivity(2., 2., 2.);
 	previewCam.setNearClip(0.001f);
 
+	bool invisibleMenu = false;
+	
 	/////////////////////////////
 	//   REALSENSE GUI   SETUP //
 	/////////////////////////////
+
 	ofLog(OF_LOG_NOTICE) << "MainAPP: loading postprocessing GUI";
 
 	post = gui.addPanel();
@@ -89,6 +92,8 @@ void ofApp::setup(){
     setupCalib->add(calibPoint_Y.set("calibrationPoint_Y", ofVec2f(REALSENSE_VIDEO_WIDTH / 2, REALSENSE_VIDEO_HEIGHT / 2), ofVec2f(0, 0), ofVec2f(REALSENSE_VIDEO_WIDTH, REALSENSE_VIDEO_HEIGHT)));
     setupCalib->add(calibPoint_O.set("calibrationPoint_Z", ofVec2f(REALSENSE_VIDEO_WIDTH / 2, REALSENSE_VIDEO_HEIGHT / 2), ofVec2f(0, 0), ofVec2f(REALSENSE_VIDEO_WIDTH, REALSENSE_VIDEO_HEIGHT)));
  
+	setupCalib->setVisible(invisibleMenu);
+
     setupCalib->loadFromFile("settings.xml");
 
 	////////////////////////////
@@ -104,6 +109,8 @@ void ofApp::setup(){
 	transformationGuiGroup.add(transformation.set("Transform", ofMatrix4x4()));
 
 	guitransform->addGroup(transformationGuiGroup);
+
+	guitransform->setVisible(invisibleMenu);
 
 	guitransform->loadFromFile("transformation.xml");
 
@@ -183,15 +190,13 @@ void ofApp::createGUIDeviceParams() {
 void ofApp::setupViewports(){
 	//call here whenever we resize the window
  
+	networking->setWidth(MENU_WIDTH / 4);
 	device->setWidth(MENU_WIDTH / 4);
 	post->setWidth(MENU_WIDTH / 4);
-	setupCalib->setWidth(MENU_WIDTH / 4);
-    guitransform->setWidth(MENU_WIDTH);
 
-	device->setPosition(ofGetWidth() - MENU_WIDTH / 2, 20);
-	post->setPosition(ofGetWidth() - MENU_WIDTH / 2, 400);
-	setupCalib->setPosition(ofGetWidth() - MENU_WIDTH / 4, 20);
-    guitransform->setPosition(ofGetWidth() - MENU_WIDTH / 4, 600);
+	networking->setPosition(ofGetWidth() - MENU_WIDTH / 2, 20);
+	device->setPosition(ofGetWidth() - MENU_WIDTH / 4, 20);
+	post->setPosition(ofGetWidth() - MENU_WIDTH / 4, 400);
 }
 
 void ofApp::measurementCycleRaw(){
@@ -535,11 +540,11 @@ void ofApp::keyPressed(int key){
 		case ' ':
 			break;
 			
-		case'p':
+		case 'p':
 			bPreviewPointCloud = !bPreviewPointCloud;
             break;
             
-		case'v':
+		case 'v':
 			bShowVisuals = !bShowVisuals;
             break;
             
@@ -556,6 +561,7 @@ void ofApp::keyPressed(int key){
 			post->saveToFile("postprocessing.xml");
 			device->saveToFile(realSense->getSerialNumber(-1) + ".xml");
 			guitransform->saveToFile("transformation.xml");
+			networking->saveToFile("broadcast.xml");
 			break;
 
         case 'l':
@@ -563,6 +569,7 @@ void ofApp::keyPressed(int key){
 			post->loadFromFile("postprocessing.xml");
 			device->loadFromFile(realSense->getSerialNumber(-1) + ".xml");
 			guitransform->loadFromFile("transformation.xml");
+			networking->loadFromFile("broadcast.xml");
 			break;
            
 		case 'h':
