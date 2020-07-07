@@ -109,6 +109,19 @@ void ofApp::setup(){
 
 	updateMatrix();
 
+	////////////////////////////
+	//   GUI   Networking     //
+	////////////////////////////
+
+	ofLog(OF_LOG_NOTICE) << "MainAPP: loading networking parameters";
+
+	networking = gui.addPanel();
+	networking->setName("Broadcasting");
+	networking->add<ofxGuiIntInputField>(serverId.set("ServerID", 0, 0, 10));
+
+	networking->loadFromFile("broadcast.xml");
+
+
 	/////////////////////////////
 	//   GUI   DEVICE PARAMS   //
 	/////////////////////////////

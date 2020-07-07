@@ -152,19 +152,12 @@ class ofApp : public ofBaseApp{
     //////////////
     ofxGui gui;
     
-    ofxGuiPanel *setupCalib;
-	ofxGuiPanel *device;
-	ofxGuiPanel *post;
-	ofxGuiPanel *guitransform;
-	ofxGuiPanel *operating;
-
-	//mode panel
-	ofxGuiGroup *operatingToggles;
-
-	ofParameterGroup operatingModes;
-	ofParameter<bool> mode0Capture;
-	ofParameter<bool> mode1Record;
-	ofParameter<bool> mode2Playback;
+    ofxGuiPanel* setupCalib;
+	ofxGuiPanel* device;
+	ofxGuiPanel* post;
+	ofxGuiPanel* guitransform;
+	ofxGuiPanel* operating;
+    ofxGuiPanel* networking;
 
     ofParameter<ofVec2f> calibPoint_X;
     ofParameter<ofVec2f> calibPoint_Y;
@@ -174,11 +167,6 @@ class ofApp : public ofBaseApp{
 
     ofParameter<ofMatrix4x4> transformation;
     
-    ofParameterGroup frustumGuiGroup;
-
-    ofParameter<int> nearFrustum;
-    ofParameter<int> farFrustum;
-
     ofParameterGroup intrinsicGuiGroup;
 
     ofParameter<float> depthCorrectionBase;
@@ -187,11 +175,12 @@ class ofApp : public ofBaseApp{
 
     ofParameter<int> blobGrain;
 
-    ofParameter<bool> captureVideo;
+    ofParameter<int> serverId;
 
     //////////
     // HELP //
     //////////
+
     string help;
 
     bool bShowHelp = true;
