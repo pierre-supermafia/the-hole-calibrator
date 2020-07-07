@@ -53,9 +53,12 @@ void ofApp::setup(){
 	previewCam.setTranslationSensitivity(2., 2., 2.);
 	previewCam.setNearClip(0.001f);
 
+	bool invisibleMenu = false;
+	
 	/////////////////////////////
 	//   REALSENSE GUI   SETUP //
 	/////////////////////////////
+
 	ofLog(OF_LOG_NOTICE) << "MainAPP: loading postprocessing GUI";
 
 	post = gui.addPanel();
@@ -89,6 +92,8 @@ void ofApp::setup(){
     setupCalib->add(calibPoint_Y.set("calibrationPoint_Y", ofVec2f(REALSENSE_VIDEO_WIDTH / 2, REALSENSE_VIDEO_HEIGHT / 2), ofVec2f(0, 0), ofVec2f(REALSENSE_VIDEO_WIDTH, REALSENSE_VIDEO_HEIGHT)));
     setupCalib->add(calibPoint_O.set("calibrationPoint_Z", ofVec2f(REALSENSE_VIDEO_WIDTH / 2, REALSENSE_VIDEO_HEIGHT / 2), ofVec2f(0, 0), ofVec2f(REALSENSE_VIDEO_WIDTH, REALSENSE_VIDEO_HEIGHT)));
  
+	setupCalib->setVisible(invisibleMenu);
+
     setupCalib->loadFromFile("settings.xml");
 
 	////////////////////////////
@@ -105,9 +110,24 @@ void ofApp::setup(){
 
 	guitransform->addGroup(transformationGuiGroup);
 
+	guitransform->setVisible(invisibleMenu);
+
 	guitransform->loadFromFile("transformation.xml");
 
 	updateMatrix();
+
+	////////////////////////////
+	//   GUI   Networking     //
+	////////////////////////////
+
+	ofLog(OF_LOG_NOTICE) << "MainAPP: loading networking parameters";
+
+	networking = gui.addPanel();
+	networking->setName("Broadcasting");
+	networking->add<ofxGuiIntInputField>(serverId.set("ServerID", 0, 0, 10));
+
+	networking->loadFromFile("broadcast.xml");
+
 
 	/////////////////////////////
 	//   GUI   DEVICE PARAMS   //
@@ -170,15 +190,13 @@ void ofApp::createGUIDeviceParams() {
 void ofApp::setupViewports(){
 	//call here whenever we resize the window
  
+	networking->setWidth(MENU_WIDTH / 4);
 	device->setWidth(MENU_WIDTH / 4);
 	post->setWidth(MENU_WIDTH / 4);
-	setupCalib->setWidth(MENU_WIDTH / 4);
-    guitransform->setWidth(MENU_WIDTH);
 
-	device->setPosition(ofGetWidth() - MENU_WIDTH / 2, 20);
-	post->setPosition(ofGetWidth() - MENU_WIDTH / 2, 400);
-	setupCalib->setPosition(ofGetWidth() - MENU_WIDTH / 4, 20);
-    guitransform->setPosition(ofGetWidth() - MENU_WIDTH / 4, 600);
+	networking->setPosition(ofGetWidth() - MENU_WIDTH / 2, 20);
+	device->setPosition(ofGetWidth() - MENU_WIDTH / 4, 20);
+	post->setPosition(ofGetWidth() - MENU_WIDTH / 4, 400);
 }
 
 void ofApp::measurementCycleRaw(){
@@ -393,62 +411,55 @@ void ofApp::draw(){
 
 	ofSetColor(255, 255, 255);
 
-    //ofLogNotice() << "draw next frame";
-    if(bShowVisuals){
-        //Draw viewport previews
-		realSense->drawDepthStream(viewGrid[0]);
-		realSense->drawInfraLeftStream(viewGrid[1]);
-        
-        switch (iMainCamera) {
-            case 0:
-				realSense->drawDepthStream(viewMain);
-                drawCalibrationPoints();
-                break;
-            case 1:
-				realSense->drawInfraLeftStream(viewMain);
-                drawCalibrationPoints();
-                break;
-			case 2:
-                previewCam.begin(viewMain);
-                mainGrid.drawPlane(5., 5, false);
-                drawPreview();
-                previewCam.end();
-                break;
-            default:
-                break;
-        }
-        
-        //Draw opengl viewport previews (ofImages dont like opengl calls before they are drawn
-        if(iMainCamera != 2){ // make sure the camera is drawn only once (so the interaction with the mouse works)
-            previewCam.begin(viewGrid[2]);
-            mainGrid.drawPlane(5., 5, false);
-            drawPreview();
-            previewCam.end();
-        }
+	//Draw viewport previews
+	realSense->drawVideoStream(viewGrid[0]);
+	realSense->drawDepthStream(viewGrid[1]);
+	
+	switch (iMainCamera) {
+		case 0:
+			realSense->drawVideoStream(viewMain);
+			drawCalibrationPoints();
+			break;
+		case 1:
+			realSense->drawDepthStream(viewMain);
+			drawCalibrationPoints();
+			break;
+		case 2:
+			previewCam.begin(viewMain);
+			mainGrid.drawPlane(5., 5, false);
+			drawPreview();
+			previewCam.end();
+			break;
+		default:
+			break;
+	}
+	
+	//Draw opengl viewport previews (ofImages dont like opengl calls before they are drawn
+	if(iMainCamera != 2){ // make sure the camera is drawn only once (so the interaction with the mouse works)
+		previewCam.begin(viewGrid[2]);
+		mainGrid.drawPlane(5., 5, false);
+		drawPreview();
+		previewCam.end();
+	}
 
-        glDisable(GL_DEPTH_TEST);
-        ofPushStyle();
-        // Highlight background of selected camera
-        ofSetColor(255, 0, 255, 255);
-        ofNoFill();
-        ofSetLineWidth(3);
-        ofDrawRectangle(viewGrid[iMainCamera]);
-    } else {
-        ofNoFill();
-        ofSetColor(255, 0, 255, 255);
-    }
-    
+	glDisable(GL_DEPTH_TEST);
+	ofPushStyle();
+	// Highlight background of selected camera
+	ofSetColor(255, 0, 255, 255);
+	ofNoFill();
+	ofSetLineWidth(3);
+	ofDrawRectangle(viewGrid[iMainCamera]);
+
 
 	// draw instructions
 	ofSetColor(255, 255, 255);
     
     if(bShowHelp) {
-        if(bShowCalcData){
-            ofDrawBitmapString(calcdata, 20 ,VIEWPORT_HEIGHT + 20);
-        } else {
-            ofDrawBitmapString(help, 20 ,VIEWPORT_HEIGHT + 20);
-        }
+		ofDrawBitmapString(help, 20 ,VIEWPORT_HEIGHT + 20);
     }
+	if(bShowCalcData){
+		ofDrawBitmapString(calcdata, 20 ,VIEWPORT_HEIGHT + 200);
+	}
 
     ofDrawBitmapString("fps: " + ofToString(ofGetFrameRate()), ofGetWidth() - 200, 10);
 
@@ -503,16 +514,17 @@ void ofApp::exit() {
 }
 
 void ofApp::createHelp(){
-    help = string("press v -> to show visualizations\n");
-	help += "press p -> to show pointcloud\n";
-	help += "press 1 - 3 -> to change the viewport\n";
-    help += "press h -> to show help \n";
-    help += "press s -> to save current settings.\n";
-	help += "press l -> to load last saved settings\n";
-	help += "press o, x, y and then mouse-click -> to change the calibration points in viewport 1\n";
-	help += "press k -> to update the calculation\n";
-	help += "press r -> to show calculation results \n";
-    help += "ATTENTION: Setup-Settings (Video) will only apply after restart\n";
+	stringstream helpStream;
+	helpStream << "press o, x, z and then mouse-click -> to change the calibration points\n";
+	helpStream << "press k -> to update the transformation\n";
+	helpStream << "press r -> view calculation results\n";
+    helpStream << "press s -> to save current settings.\n";
+	helpStream << "press l -> to load last saved settings\n";
+	helpStream << "\n";
+	helpStream << "press 1 - 3 -> to change the viewport\n";
+	helpStream << "press p -> to show pointcloud\n";
+    helpStream << "press h -> to show help \n";
+	help = helpStream.str();
 }
 
 //--------------------------------------------------------------
@@ -522,12 +534,8 @@ void ofApp::keyPressed(int key){
 		case ' ':
 			break;
 			
-		case'p':
+		case 'p':
 			bPreviewPointCloud = !bPreviewPointCloud;
-            break;
-            
-		case'v':
-			bShowVisuals = !bShowVisuals;
             break;
             
         case 'r':
@@ -543,6 +551,7 @@ void ofApp::keyPressed(int key){
 			post->saveToFile("postprocessing.xml");
 			device->saveToFile(realSense->getSerialNumber(-1) + ".xml");
 			guitransform->saveToFile("transformation.xml");
+			networking->saveToFile("broadcast.xml");
 			break;
 
         case 'l':
@@ -550,6 +559,7 @@ void ofApp::keyPressed(int key){
 			post->loadFromFile("postprocessing.xml");
 			device->loadFromFile(realSense->getSerialNumber(-1) + ".xml");
 			guitransform->loadFromFile("transformation.xml");
+			networking->loadFromFile("broadcast.xml");
 			break;
            
 		case 'h':

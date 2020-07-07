@@ -35,33 +35,30 @@ using namespace ofxRealSenseTwo;
 
 class ofApp : public ofBaseApp{
 
-	public:
-		void setup();
-		void update();
-		void draw();
-        void exit();
+public:
+    void setup();
+    void update();
+    void draw();
+    void exit();
+    
+    void keyPressed(int key);
+    void keyReleased(int key);
+    void mouseMoved(int x, int y );
+    void mouseDragged(int x, int y, int button);
+    void mousePressed(int x, int y, int button);
+    void mouseReleased(int x, int y, int button);
+    void windowResized(int w, int h);
+    void dragEvent(ofDragInfo dragInfo);
+    void gotMessage(ofMessage msg);		
+
+    vector <string> storeText;
+    
+    //ofxUDPManager udpConnection;
+
+    ofTrueTypeFont  mono;
+    ofTrueTypeFont  monosm;
+    vector<ofPoint> stroke;
         
-		void keyPressed(int key);
-		void keyReleased(int key);
-		void mouseMoved(int x, int y );
-		void mouseDragged(int x, int y, int button);
-		void mousePressed(int x, int y, int button);
-		void mouseReleased(int x, int y, int button);
-		void windowResized(int w, int h);
-		void dragEvent(ofDragInfo dragInfo);
-		void gotMessage(ofMessage msg);		
-
-        vector <string> storeText;
-		
-        //ofxUDPManager udpConnection;
-
-		ofTrueTypeFont  mono;
-		ofTrueTypeFont  monosm;
-		vector<ofPoint> stroke;
-    
-
-    bool bShowVisuals = false;
-    
     //////////////////
     //OPENGL CAMERAS//
     //////////////////
@@ -152,19 +149,12 @@ class ofApp : public ofBaseApp{
     //////////////
     ofxGui gui;
     
-    ofxGuiPanel *setupCalib;
-	ofxGuiPanel *device;
-	ofxGuiPanel *post;
-	ofxGuiPanel *guitransform;
-	ofxGuiPanel *operating;
-
-	//mode panel
-	ofxGuiGroup *operatingToggles;
-
-	ofParameterGroup operatingModes;
-	ofParameter<bool> mode0Capture;
-	ofParameter<bool> mode1Record;
-	ofParameter<bool> mode2Playback;
+    ofxGuiPanel* setupCalib;
+	ofxGuiPanel* device;
+	ofxGuiPanel* post;
+	ofxGuiPanel* guitransform;
+	ofxGuiPanel* operating;
+    ofxGuiPanel* networking;
 
     ofParameter<ofVec2f> calibPoint_X;
     ofParameter<ofVec2f> calibPoint_Y;
@@ -174,11 +164,6 @@ class ofApp : public ofBaseApp{
 
     ofParameter<ofMatrix4x4> transformation;
     
-    ofParameterGroup frustumGuiGroup;
-
-    ofParameter<int> nearFrustum;
-    ofParameter<int> farFrustum;
-
     ofParameterGroup intrinsicGuiGroup;
 
     ofParameter<float> depthCorrectionBase;
@@ -187,11 +172,12 @@ class ofApp : public ofBaseApp{
 
     ofParameter<int> blobGrain;
 
-    ofParameter<bool> captureVideo;
+    ofParameter<int> serverId;
 
     //////////
     // HELP //
     //////////
+
     string help;
 
     bool bShowHelp = true;
