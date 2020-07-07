@@ -411,60 +411,53 @@ void ofApp::draw(){
 
 	ofSetColor(255, 255, 255);
 
-    //ofLogNotice() << "draw next frame";
-    if(bShowVisuals){
-        //Draw viewport previews
-		realSense->drawDepthStream(viewGrid[0]);
-		realSense->drawInfraLeftStream(viewGrid[1]);
-        
-        switch (iMainCamera) {
-            case 0:
-				realSense->drawDepthStream(viewMain);
-                drawCalibrationPoints();
-                break;
-            case 1:
-				realSense->drawInfraLeftStream(viewMain);
-                drawCalibrationPoints();
-                break;
-			case 2:
-                previewCam.begin(viewMain);
-                mainGrid.drawPlane(5., 5, false);
-                drawPreview();
-                previewCam.end();
-                break;
-            default:
-                break;
-        }
-        
-        //Draw opengl viewport previews (ofImages dont like opengl calls before they are drawn
-        if(iMainCamera != 2){ // make sure the camera is drawn only once (so the interaction with the mouse works)
-            previewCam.begin(viewGrid[2]);
-            mainGrid.drawPlane(5., 5, false);
-            drawPreview();
-            previewCam.end();
-        }
+	//Draw viewport previews
+	realSense->drawDepthStream(viewGrid[0]);
+	realSense->drawInfraLeftStream(viewGrid[1]);
+	
+	switch (iMainCamera) {
+		case 0:
+			realSense->drawDepthStream(viewMain);
+			drawCalibrationPoints();
+			break;
+		case 1:
+			realSense->drawInfraLeftStream(viewMain);
+			drawCalibrationPoints();
+			break;
+		case 2:
+			previewCam.begin(viewMain);
+			mainGrid.drawPlane(5., 5, false);
+			drawPreview();
+			previewCam.end();
+			break;
+		default:
+			break;
+	}
+	
+	//Draw opengl viewport previews (ofImages dont like opengl calls before they are drawn
+	if(iMainCamera != 2){ // make sure the camera is drawn only once (so the interaction with the mouse works)
+		previewCam.begin(viewGrid[2]);
+		mainGrid.drawPlane(5., 5, false);
+		drawPreview();
+		previewCam.end();
+	}
 
-        glDisable(GL_DEPTH_TEST);
-        ofPushStyle();
-        // Highlight background of selected camera
-        ofSetColor(255, 0, 255, 255);
-        ofNoFill();
-        ofSetLineWidth(3);
-        ofDrawRectangle(viewGrid[iMainCamera]);
-    } else {
-        ofNoFill();
-        ofSetColor(255, 0, 255, 255);
-    }
-    
+	glDisable(GL_DEPTH_TEST);
+	ofPushStyle();
+	// Highlight background of selected camera
+	ofSetColor(255, 0, 255, 255);
+	ofNoFill();
+	ofSetLineWidth(3);
+	ofDrawRectangle(viewGrid[iMainCamera]);
+
 
 	// draw instructions
 	ofSetColor(255, 255, 255);
     
     if(bShowHelp) {
+		ofDrawBitmapString(help, 20 ,VIEWPORT_HEIGHT + 20);
         if(bShowCalcData){
             ofDrawBitmapString(calcdata, 20 ,VIEWPORT_HEIGHT + 20);
-        } else {
-            ofDrawBitmapString(help, 20 ,VIEWPORT_HEIGHT + 20);
         }
     }
 
@@ -542,10 +535,6 @@ void ofApp::keyPressed(int key){
 			
 		case 'p':
 			bPreviewPointCloud = !bPreviewPointCloud;
-            break;
-            
-		case 'v':
-			bShowVisuals = !bShowVisuals;
             break;
             
         case 'r':
