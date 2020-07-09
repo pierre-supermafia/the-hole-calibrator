@@ -130,6 +130,13 @@ void ofApp::setup(){
 	tracking->loadTheme("theme/theme_light.json");
 	tracking->setName("Tracking");
 
+	sensorBoxLeft.addListener(this, &ofApp::updateBoundingBox);
+	sensorBoxRight.addListener(this, &ofApp::updateBoundingBox);
+	sensorBoxFront.addListener(this, &ofApp::updateBoundingBox);
+	sensorBoxBack.addListener(this, &ofApp::updateBoundingBox);
+	sensorBoxTop.addListener(this, &ofApp::updateBoundingBox);
+	sensorBoxBottom.addListener(this, &ofApp::updateBoundingBox);
+
 	sensorBoxGuiGroup = tracking->addGroup("SensorBox");
 	sensorBoxGuiGroup->add<ofxGuiIntInputField>(sensorBoxLeft.set("left", 1000));
 	sensorBoxGuiGroup->add<ofxGuiIntInputField>(sensorBoxRight.set("right", -1000));
@@ -271,6 +278,38 @@ void ofApp::measurementCycleFine(){
         cycleCounter = 0;
         updateCalc();
     }
+}
+
+void ofApp::updateBoundingBox(int& value) {
+	const float SCALE = 0.001f;
+
+	boundingBox.clear();
+	boundingBox.setMode(OF_PRIMITIVE_LINES);
+
+	boundingBox.addVertex(ofPoint(sensorBoxLeft.get() * SCALE, sensorBoxFront.get() * SCALE, sensorBoxBottom.get() * SCALE));
+	boundingBox.addVertex(ofPoint(sensorBoxRight.get() * SCALE, sensorBoxFront.get() * SCALE, sensorBoxBottom.get() * SCALE));
+
+	boundingBox.addVertex(ofPoint(sensorBoxRight.get() * SCALE, sensorBoxFront.get() * SCALE, sensorBoxBottom.get() * SCALE));
+	boundingBox.addVertex(ofPoint(sensorBoxRight.get() * SCALE, sensorBoxBack.get() * SCALE, sensorBoxBottom.get() * SCALE));
+
+	boundingBox.addVertex(ofPoint(sensorBoxRight.get() * SCALE, sensorBoxBack.get() * SCALE, sensorBoxBottom.get() * SCALE));
+	boundingBox.addVertex(ofPoint(sensorBoxLeft.get() * SCALE, sensorBoxBack.get() * SCALE, sensorBoxBottom.get() * SCALE));
+
+	boundingBox.addVertex(ofPoint(sensorBoxLeft.get() * SCALE, sensorBoxBack.get() * SCALE, sensorBoxBottom.get() * SCALE));
+	boundingBox.addVertex(ofPoint(sensorBoxLeft.get() * SCALE, sensorBoxFront.get() * SCALE, sensorBoxBottom.get() * SCALE));
+
+	boundingBox.addVertex(ofPoint(sensorBoxLeft.get() * SCALE, sensorBoxFront.get() * SCALE, sensorBoxTop.get() * SCALE));
+	boundingBox.addVertex(ofPoint(sensorBoxRight.get() * SCALE, sensorBoxFront.get() * SCALE, sensorBoxTop.get() * SCALE));
+
+	boundingBox.addVertex(ofPoint(sensorBoxRight.get() * SCALE, sensorBoxFront.get() * SCALE, sensorBoxTop.get() * SCALE));
+	boundingBox.addVertex(ofPoint(sensorBoxRight.get() * SCALE, sensorBoxBack.get() * SCALE, sensorBoxTop.get() * SCALE));
+
+	boundingBox.addVertex(ofPoint(sensorBoxRight.get() * SCALE, sensorBoxBack.get() * SCALE, sensorBoxTop.get() * SCALE));
+	boundingBox.addVertex(ofPoint(sensorBoxLeft.get() * SCALE, sensorBoxBack.get() * SCALE, sensorBoxTop.get() * SCALE));
+
+	boundingBox.addVertex(ofPoint(sensorBoxLeft.get() * SCALE, sensorBoxBack.get() * SCALE, sensorBoxTop.get() * SCALE));
+	boundingBox.addVertex(ofPoint(sensorBoxLeft.get() * SCALE, sensorBoxFront.get() * SCALE, sensorBoxTop.get() * SCALE));
+
 }
 
 //--------------------------------------------------------------
@@ -508,6 +547,8 @@ void ofApp::drawPreview() {
     
 	glDisable(GL_DEPTH_TEST);
 	ofPopMatrix();
+	
+	boundingBox.draw();
 }
 
 void ofApp::drawCalibrationPoints(){

@@ -35,32 +35,32 @@ using namespace ofxRealSenseTwo;
 
 class ofApp : public ofBaseApp{
 
-	public:
-		void setup();
-		void update();
-		void draw();
-        void exit();
-        
-		void keyPressed(int key);
-		void keyReleased(int key);
-		void mouseMoved(int x, int y );
-		void mouseDragged(int x, int y, int button);
-		void mousePressed(int x, int y, int button);
-		void mouseReleased(int x, int y, int button);
-		void windowResized(int w, int h);
-		void dragEvent(ofDragInfo dragInfo);
-		void gotMessage(ofMessage msg);		
+public:
+    void setup();
+    void update();
+    void draw();
+    void exit();
+    
+    void keyPressed(int key);
+    void keyReleased(int key);
+    void mouseMoved(int x, int y );
+    void mouseDragged(int x, int y, int button);
+    void mousePressed(int x, int y, int button);
+    void mouseReleased(int x, int y, int button);
+    void windowResized(int w, int h);
+    void dragEvent(ofDragInfo dragInfo);
+    void gotMessage(ofMessage msg);		
 
-        vector <string> storeText;
-		
-        //ofxUDPManager udpConnection;
+    vector <string> storeText;
+    
+    //ofxUDPManager udpConnection;
 
-		ofTrueTypeFont  mono;
-		ofTrueTypeFont  monosm;
-		vector<ofPoint> stroke;
+    ofTrueTypeFont  mono;
+    ofTrueTypeFont  monosm;
+    vector<ofPoint> stroke;
     
 
-    bool bShowVisuals = false;
+    bool bShowVisuals = true;
     
     //////////////////
     //OPENGL CAMERAS//
@@ -198,6 +198,9 @@ class ofApp : public ofBaseApp{
     ofParameter<int> sensorBoxBottom;
     ofParameter<int> sensorBoxFront;
     ofParameter<int> sensorBoxBack;
+
+    ofVboMesh boundingBox;
+    void updateBoundingBox(int& value);
 
     //////////
     // HELP //
