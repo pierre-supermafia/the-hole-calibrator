@@ -52,6 +52,14 @@ void ofApp::setup(){
 	previewCam.setUpAxis(glm::vec3(0, 0, 1));
 	previewCam.setTranslationSensitivity(2., 2., 2.);
 	previewCam.setNearClip(0.001f);
+	previewCam.setPosition(0, 0, 3);
+
+	/////////////////////////////
+	//   GUI   SETUP           //
+	/////////////////////////////
+
+	// ofxGuiPanel::setVisible takes a ref as parameter
+	bool invisibleMenu = false;
 
 	/////////////////////////////
 	//   REALSENSE GUI   SETUP //
@@ -91,6 +99,8 @@ void ofApp::setup(){
  
     setupCalib->loadFromFile("settings.xml");
 
+	setupCalib->setVisible(invisibleMenu);
+
 	////////////////////////////
 	//   GUI   Transfromation //
 	////////////////////////////
@@ -107,7 +117,28 @@ void ofApp::setup(){
 
 	guitransform->loadFromFile("transformation.xml");
 
+	guitransform->setVisible(invisibleMenu);
+
 	updateMatrix();
+
+	////////////////////////////////////
+	//   GUI   tracking bouding box   //
+	////////////////////////////////////
+
+	tracking = gui.addPanel();
+
+	tracking->loadTheme("theme/theme_light.json");
+	tracking->setName("Tracking");
+
+	sensorBoxGuiGroup = tracking->addGroup("SensorBox");
+	sensorBoxGuiGroup->add<ofxGuiIntInputField>(sensorBoxLeft.set("left", 1000));
+	sensorBoxGuiGroup->add<ofxGuiIntInputField>(sensorBoxRight.set("right", -1000));
+	sensorBoxGuiGroup->add<ofxGuiIntInputField>(sensorBoxFront.set("front", 1000));
+	sensorBoxGuiGroup->add<ofxGuiIntInputField>(sensorBoxBack.set("back", -1000));
+	sensorBoxGuiGroup->add<ofxGuiIntInputField>(sensorBoxTop.set("top", 2000));
+	sensorBoxGuiGroup->add<ofxGuiIntInputField>(sensorBoxBottom.set("bottom", 300));
+
+	tracking->loadFromFile("trackings.xml");
 
 	/////////////////////////////
 	//   GUI   DEVICE PARAMS   //
@@ -173,13 +204,11 @@ void ofApp::setupViewports(){
  
 	device->setWidth(MENU_WIDTH / 4);
 	post->setWidth(MENU_WIDTH / 4);
-	setupCalib->setWidth(MENU_WIDTH / 4);
-    guitransform->setWidth(MENU_WIDTH);
+	tracking->setWidth(MENU_WIDTH / 4);
 
 	device->setPosition(ofGetWidth() - MENU_WIDTH / 2, 20);
 	post->setPosition(ofGetWidth() - MENU_WIDTH / 2, 400);
-	setupCalib->setPosition(ofGetWidth() - MENU_WIDTH / 4, 20);
-    guitransform->setPosition(ofGetWidth() - MENU_WIDTH / 4, 600);
+	tracking->setPosition(ofGetWidth() - MENU_WIDTH / 4, 20);
 }
 
 void ofApp::measurementCycleRaw(){

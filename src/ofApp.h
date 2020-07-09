@@ -152,11 +152,12 @@ class ofApp : public ofBaseApp{
     //////////////
     ofxGui gui;
     
-    ofxGuiPanel *setupCalib;
-	ofxGuiPanel *device;
-	ofxGuiPanel *post;
-	ofxGuiPanel *guitransform;
-	ofxGuiPanel *operating;
+    ofxGuiPanel* setupCalib;
+	ofxGuiPanel* device;
+	ofxGuiPanel* post;
+	ofxGuiPanel* guitransform;
+	ofxGuiPanel* operating;
+    ofxGuiPanel* tracking;
 
 	//mode panel
 	ofxGuiGroup *operatingToggles;
@@ -188,6 +189,15 @@ class ofApp : public ofBaseApp{
     ofParameter<int> blobGrain;
 
     ofParameter<bool> captureVideo;
+
+    // bounding box
+    ofxGuiGroup *sensorBoxGuiGroup;
+    ofParameter<int> sensorBoxLeft;
+    ofParameter<int> sensorBoxRight;
+    ofParameter<int> sensorBoxTop;
+    ofParameter<int> sensorBoxBottom;
+    ofParameter<int> sensorBoxFront;
+    ofParameter<int> sensorBoxBack;
 
     //////////
     // HELP //
