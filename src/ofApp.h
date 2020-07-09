@@ -96,7 +96,7 @@ public:
 
     bool dispRaw;
 
-    bool bPreviewPointCloud;
+    bool bPreviewPointCloud = true;
     
     ofVboMesh previewmesh;//, capturemesh;
     
