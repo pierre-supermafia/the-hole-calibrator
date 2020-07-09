@@ -58,10 +58,7 @@ public:
     ofTrueTypeFont  mono;
     ofTrueTypeFont  monosm;
     vector<ofPoint> stroke;
-    
-
-    bool bShowVisuals = true;
-    
+        
     //////////////////
     //OPENGL CAMERAS//
     //////////////////
@@ -158,14 +155,7 @@ public:
 	ofxGuiPanel* guitransform;
 	ofxGuiPanel* operating;
     ofxGuiPanel* tracking;
-
-	//mode panel
-	ofxGuiGroup *operatingToggles;
-
-	ofParameterGroup operatingModes;
-	ofParameter<bool> mode0Capture;
-	ofParameter<bool> mode1Record;
-	ofParameter<bool> mode2Playback;
+    ofxGuiPanel* networking;
 
     ofParameter<ofVec2f> calibPoint_X;
     ofParameter<ofVec2f> calibPoint_Y;
@@ -175,11 +165,6 @@ public:
 
     ofParameter<ofMatrix4x4> transformation;
     
-    ofParameterGroup frustumGuiGroup;
-
-    ofParameter<int> nearFrustum;
-    ofParameter<int> farFrustum;
-
     ofParameterGroup intrinsicGuiGroup;
 
     ofParameter<float> depthCorrectionBase;
@@ -188,7 +173,7 @@ public:
 
     ofParameter<int> blobGrain;
 
-    ofParameter<bool> captureVideo;
+    ofParameter<int> serverId;
 
     // bounding box
     ofxGuiGroup *sensorBoxGuiGroup;
@@ -205,6 +190,7 @@ public:
     //////////
     // HELP //
     //////////
+
     string help;
 
     bool bShowHelp = true;
