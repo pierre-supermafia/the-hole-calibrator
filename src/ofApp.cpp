@@ -465,16 +465,16 @@ void ofApp::draw(){
     //ofLogNotice() << "draw next frame";
     if(bShowVisuals){
         //Draw viewport previews
-		realSense->drawDepthStream(viewGrid[0]);
-		realSense->drawInfraLeftStream(viewGrid[1]);
+		realSense->drawVideoStream(viewGrid[0]);
+		realSense->drawDepthStream(viewGrid[1]);
         
         switch (iMainCamera) {
             case 0:
-				realSense->drawDepthStream(viewMain);
+				realSense->drawInfraLeftStream(viewMain);
                 drawCalibrationPoints();
                 break;
             case 1:
-				realSense->drawInfraLeftStream(viewMain);
+				realSense->drawDepthStream(viewMain);
                 drawCalibrationPoints();
                 break;
 			case 2:
@@ -547,7 +547,7 @@ void ofApp::drawPreview() {
     
 	glDisable(GL_DEPTH_TEST);
 	ofPopMatrix();
-	
+
 	boundingBox.draw();
 }
 
