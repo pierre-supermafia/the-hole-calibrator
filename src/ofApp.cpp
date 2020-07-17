@@ -150,7 +150,15 @@ void ofApp::setup(){
 	sensorBoxGuiGroup->add<ofxGuiIntInputField>(sensorBoxTop.set("top", 2000));
 	sensorBoxGuiGroup->add<ofxGuiIntInputField>(sensorBoxBottom.set("bottom", 300));
 
-	tracking->loadFromFile("trackings.xml");
+	blobGuiGroup = tracking->addGroup("Blobs");
+	blobGuiGroup->add(blobAreaMax.set("AreaMax", 94, 0, 255));
+	blobGuiGroup->add(blobAreaMinStp1.set("AreaMinStp1", 17, 0, 255));
+	blobGuiGroup->add(blobAreaMinStp2.set("AreaMinStp2", 8, 0, 255));
+	blobGuiGroup->add(countBlob.set("MaxBlobs", 2, 1, 5));
+    blobGuiGroup->add(eyeLevel.set("EyeLevel", 140, 0, 200));
+    blobGuiGroup->add(eyeInset.set("EyeInset", .8, 0, 1));
+
+	tracking->loadFromFile("tracking.xml");
 	////////////////////////////
 	//   GUI   Networking     //
 	////////////////////////////
@@ -611,6 +619,7 @@ void ofApp::keyPressed(int key){
  
         case 's':
             setupCalib->saveToFile("settings.xml");
+			tracking->saveToFile("tracking.xml");
 			post->saveToFile("postprocessing.xml");
 			device->saveToFile(realSense->getSerialNumber(-1) + ".xml");
 			guitransform->saveToFile("transformation.xml");
@@ -619,6 +628,7 @@ void ofApp::keyPressed(int key){
 
         case 'l':
             setupCalib->loadFromFile("settings.xml");
+			tracking->loadFromFile("tracking.xml");
 			post->loadFromFile("postprocessing.xml");
 			device->loadFromFile(realSense->getSerialNumber(-1) + ".xml");
 			guitransform->loadFromFile("transformation.xml");

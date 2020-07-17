@@ -184,6 +184,15 @@ public:
     ofParameter<int> sensorBoxFront;
     ofParameter<int> sensorBoxBack;
 
+    // blob tracking parameters
+    ofxGuiGroup *blobGuiGroup;
+    ofParameter<int> blobAreaMinStp2;
+	ofParameter<int> blobAreaMinStp1;
+	ofParameter<int> blobAreaMax;
+    ofParameter<int> countBlob;
+    ofParameter<float> eyeLevel;
+    ofParameter<float> eyeInset;
+
     ofVboMesh boundingBox;
     void updateBoundingBox(int& value);
 
