@@ -7,7 +7,7 @@
 	<use_spatial_filter>1</use_spatial_filter>
 	<spatial_smoothAlpha>0.364669</spatial_smoothAlpha>
 	<spatial_smoothDelta>16</spatial_smoothDelta>
-	<spatial_magnitude>2</spatial_magnitude>
+	<spatial_magnitude>5</spatial_magnitude>
 	<use_temporal_Filter>1</use_temporal_Filter>
 	<temporal_smoothAlpha>0.14876</temporal_smoothAlpha>
 	<temporal_smoothDelta>32</temporal_smoothDelta>

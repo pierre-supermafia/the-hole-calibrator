@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<Tracking>
+	<SensorBox>
+		<left>3000</left>
+		<right>-3000</right>
+		<front>500</front>
+		<back>-500</back>
+		<top>2000</top>
+		<bottom>300</bottom>
+	</SensorBox>
+	<Blobs>
+		<AreaMax>192</AreaMax>
+		<AreaMinStp1>38</AreaMinStp1>
+		<AreaMinStp2>0</AreaMinStp2>
+		<MaxBlobs>2</MaxBlobs>
+		<EyeLevel>140</EyeLevel>
+		<EyeInset>0.8</EyeInset>
+	</Blobs>
+</Tracking>

@@ -2,11 +2,36 @@
 <Calibration_Panel>
 	<use_video>1</use_video>
 	<Grain>6</Grain>
-	<calibrationPoint_X>399, 304</calibrationPoint_X>
-	<calibrationPoint_Y>374, 250</calibrationPoint_Y>
-	<calibrationPoint_Z>347, 280</calibrationPoint_Z>
+	<calibrationPoint_X>483, 357</calibrationPoint_X>
+	<calibrationPoint_Y>465, 335</calibrationPoint_Y>
+	<calibrationPoint_Z>437, 342</calibrationPoint_Z>
 	<frustumField>
 		<nearFrustum>400</nearFrustum>
 		<farFrustum>4000</farFrustum>
 	</frustumField>
 </Calibration_Panel>
+<Tracking>
+	<SensorBox>
+		<left>1000</left>
+		<right>-1000</right>
+		<front>1000</front>
+		<back>-1000</back>
+		<top>2000</top>
+		<bottom>1000</bottom>
+		<Use_Mask>0</Use_Mask>
+	</SensorBox>
+	<Quality>
+		<sensorFboSize>1</sensorFboSize>
+		<Smoothing>0.5</Smoothing>
+		<BreathSize>2000</BreathSize>
+		<MaxDistance>400</MaxDistance>
+	</Quality>
+	<Blobs>
+		<AreaMax>5</AreaMax>
+		<AreaMinStp1>10</AreaMinStp1>
+		<AreaMinStp2>10</AreaMinStp2>
+		<MaxBlobs>5</MaxBlobs>
+		<EyeLevel>140</EyeLevel>
+		<EyeInset>0.8</EyeInset>
+	</Blobs>
+</Tracking>
