@@ -494,7 +494,12 @@ void ofApp::draw(){
 	
 	switch (iMainCamera) {
 		case 0:
-			realSense->drawInfraLeftStream(viewMain);
+			realSense->drawInfraLeftStreamZoomed(viewMain,
+				ofRectangle(
+					x_0 - 0.5 / zoom,
+					y_0 - 0.5 / zoom,
+					1 / zoom,
+					1 / zoom));
 			drawCalibrationPoints();
 			break;
 		case 1:
@@ -562,20 +567,57 @@ void ofApp::drawPreview() {
 	boundingBox.draw();
 }
 
+glm::vec2 ofApp::getZoomedCoordinates(glm::vec2 p){
+	return getZoomedCoordinates(p.x, p.y);
+}
+
+glm::vec2 ofApp::getZoomedCoordinates(float x, float y){
+	
+	glm::vec2 zoomed;
+	zoomed.x = ((x / viewMain.width  - x_0) * zoom + 0.5f) * viewMain.width;
+	zoomed.y = ((y / viewMain.height - y_0) * zoom + 0.5f) * viewMain.height;
+
+	return zoomed;
+}
+
+glm::vec2 ofApp::getUnzoomedCoordinates(float x, float y) {
+
+	glm::vec2 unzoomed;
+	unzoomed.x = viewMain.width  * ((x / viewMain.width  - 0.5f) / zoom + x_0);
+	unzoomed.y = viewMain.height * ((y / viewMain.height - 0.5f) / zoom + y_0);
+
+	return unzoomed;
+}
+
 void ofApp::drawCalibrationPoints(){
     glDisable(GL_DEPTH_TEST);
     ofPushStyle();
     ofSetColor(255, 0, 0);
     ofNoFill();
-    ofDrawBitmapString("o", calibPoint_O.get().x/REALSENSE_DEPTH_WIDTH*viewMain.width + VIEWGRID_WIDTH + 5, calibPoint_O.get().y -5);
-    ofDrawBitmapString("x", calibPoint_X.get().x/REALSENSE_DEPTH_WIDTH*viewMain.width + VIEWGRID_WIDTH + 5, calibPoint_X.get().y -5);
-    ofDrawBitmapString("y", calibPoint_Y.get().x/REALSENSE_DEPTH_WIDTH*viewMain.width + VIEWGRID_WIDTH + 5, calibPoint_Y.get().y -5);
-    ofDrawCircle(calibPoint_X.get().x/REALSENSE_DEPTH_WIDTH*viewMain.width + VIEWGRID_WIDTH, calibPoint_X.get().y, 2);
-    ofDrawCircle(calibPoint_Y.get().x/REALSENSE_DEPTH_WIDTH*viewMain.width + VIEWGRID_WIDTH, calibPoint_Y.get().y, 2);
-    ofDrawCircle(calibPoint_O.get().x/REALSENSE_DEPTH_WIDTH*viewMain.width + VIEWGRID_WIDTH, calibPoint_O.get().y, 2);
-    ofPopStyle();
+	glm::vec2 o, x, y;
+	o = getZoomedCoordinates(calibPoint_O.get());
+	x = getZoomedCoordinates(calibPoint_X.get());
+	y = getZoomedCoordinates(calibPoint_Y.get());
+    
+	ofDrawBitmapString("o",
+		VIEWGRID_WIDTH + o.x  + 5,
+		o.y -5);
+    ofDrawBitmapString("x",
+		x.x + VIEWGRID_WIDTH + 5,
+		x.y -5);
+    ofDrawBitmapString("y",
+		y.x + VIEWGRID_WIDTH + 5,
+		y.y -5);
+    
+	ofDrawCircle(x.x + VIEWGRID_WIDTH, x.y, 2);
+    ofDrawCircle(y.x + VIEWGRID_WIDTH, y.y, 2);
+    ofDrawCircle(o.x + VIEWGRID_WIDTH, o.y, 2);
+    
+	ofPopStyle();
     glEnable(GL_DEPTH_TEST);
 }
+
+
 
 //--------------------------------------------------------------
 void ofApp::exit() {
@@ -656,6 +698,9 @@ void ofApp::keyPressed(int key){
             
 		case '1':
             iMainCamera = 0;
+			// reset zoom
+			zoom = 1;
+			x_0 = y_0 = 0.5f;
 			break;
 			
 		case '2':
@@ -682,32 +727,54 @@ void ofApp::mouseMoved(int x, int y ){
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
-	stroke.push_back(ofPoint(x,y));
+	if (button == 2) {
+		x_0 += (x_drag - x) / (zoom * viewMain.width);
+		y_0 += (y_drag - y) / (zoom * viewMain.height);
+
+		x_drag = x;
+		y_drag = y;
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-    if(iMainCamera == 0 || iMainCamera == 1 && bUpdateSetMesurmentPoint != -1) {
-        if(bUpdateSetMesurmentPoint == 'x'){
-            int posX = (x - VIEWGRID_WIDTH) / viewMain.width * REALSENSE_DEPTH_WIDTH;
-            int posY = y;
-            if(0 <= posX && posX < REALSENSE_DEPTH_WIDTH &&
-               0 <= posY && posY < REALSENSE_DEPTH_HEIGHT)
-                calibPoint_X.set(glm::vec2(posX, posY));
-        }else if(bUpdateSetMesurmentPoint == 'y'){
-            int posX = (x - VIEWGRID_WIDTH) / viewMain.width * REALSENSE_DEPTH_WIDTH;
-            int posY = y;
-            if(0 <= posX && posX < REALSENSE_DEPTH_WIDTH &&
-               0 <= posY && posY < REALSENSE_DEPTH_HEIGHT)
-                calibPoint_Y.set(glm::vec2(posX, posY));
-        }else if(bUpdateSetMesurmentPoint == 'o'){
-            int posX = (x - VIEWGRID_WIDTH) / viewMain.width * REALSENSE_DEPTH_WIDTH;
-            int posY = y;
-            if(0 <= posX && posX < REALSENSE_DEPTH_WIDTH &&
-               0 <= posY && posY < REALSENSE_DEPTH_HEIGHT)
-                calibPoint_O.set(glm::vec2(posX, posY));
-        }
-    }
+	if (button == 2) {
+		x_drag = x;
+		y_drag = y;
+	} else if (button == 0) {
+		if(iMainCamera == 0 || iMainCamera == 1 && bUpdateSetMesurmentPoint != -1) {
+			if(bUpdateSetMesurmentPoint == 'x'){
+				int posX = (x - VIEWGRID_WIDTH);
+				int posY = y;
+				if(0 <= posX && posX < viewMain.width &&
+				0 <= posY && posY < viewMain.height)
+					calibPoint_X.set(getUnzoomedCoordinates(posX, posY));
+			}else if(bUpdateSetMesurmentPoint == 'y'){
+				int posX = (x - VIEWGRID_WIDTH);
+				int posY = y;
+				if(0 <= posX && posX < REALSENSE_DEPTH_WIDTH &&
+				0 <= posY && posY < REALSENSE_DEPTH_HEIGHT)
+					calibPoint_Y.set(getUnzoomedCoordinates(posX, posY));
+			}else if(bUpdateSetMesurmentPoint == 'o'){
+				int posX = (x - VIEWGRID_WIDTH);
+				int posY = y;
+				if(0 <= posX && posX < REALSENSE_DEPTH_WIDTH &&
+				0 <= posY && posY < REALSENSE_DEPTH_HEIGHT)
+					calibPoint_O.set(getUnzoomedCoordinates(posX, posY));
+			}
+		}
+	}
+}
+
+void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY) {
+	if (VIEWGRID_WIDTH < x && x <= VIEWGRID_WIDTH + viewMain.width
+		&& y <= viewMain.height)
+	{
+		zoom += scrollY * zoomStep;
+
+		if (zoom < 1) zoom = 1;
+		if (zoom > zoomMax) zoom = zoomMax;
+	}
 }
 
 //--------------------------------------------------------------

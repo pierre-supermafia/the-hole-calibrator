@@ -47,6 +47,7 @@ public:
     void mouseDragged(int x, int y, int button);
     void mousePressed(int x, int y, int button);
     void mouseReleased(int x, int y, int button);
+    void mouseScrolled(int x, int y, float scrollX, float scrollY) override;
     void windowResized(int w, int h);
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);		
@@ -206,5 +207,23 @@ public:
 
     void createHelp();
 
+    //////////
+    // ZOOM //
+    //////////
+
+    float zoom = 1.0f;
+    const float zoomMax = 5.0f;
+    const float zoomStep = 0.2f;
+
+    float x_0 = 0.5f;
+    float y_0 = 0.5f;
+    float x_drag= 0, y_drag = 0;
+
+    glm::vec2 getZoomedCoordinates(float x, float y);
+    glm::vec2 getZoomedCoordinates(glm::vec2 p);
+
+    glm::vec2 getUnzoomedCoordinates(float x, float y);
+
+    void zoomIn();
 };
 
